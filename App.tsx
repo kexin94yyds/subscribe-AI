@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Command, LayoutGrid, List as ListIcon, Search, Download, Upload } from 'lucide-react';
+import { Plus, Command, LayoutGrid, List as ListIcon, Search, Download, Upload, Calendar } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { AccountCard } from './components/AccountCard';
 import { Button } from './components/Button';
@@ -103,6 +103,54 @@ export default function App() {
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // 导出到日历 (ICS格式)
+  const handleExportToCalendar = () => {
+    const generateICS = () => {
+      const events = accounts.map(account => {
+        const date = account.expirationDate.replace(/-/g, '');
+        const uid = `${account.id}@monoexpire`;
+        const summary = `${account.name} 订阅到期`;
+        const description = account.notes ? account.notes.replace(/\n/g, '\\n') : '';
+        
+        return `BEGIN:VEVENT
+UID:${uid}
+DTSTART;VALUE=DATE:${date}
+DTEND;VALUE=DATE:${date}
+SUMMARY:${summary}
+DESCRIPTION:${description}${account.provider ? ' - ' + account.provider : ''}
+BEGIN:VALARM
+TRIGGER:-P3D
+ACTION:DISPLAY
+DESCRIPTION:${account.name} 将在3天后到期
+END:VALARM
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:${account.name} 明天到期
+END:VALARM
+END:VEVENT`;
+      }).join('\n');
+
+      return `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//MonoExpire//Subscription Tracker//CN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:MonoExpire 订阅提醒
+${events}
+END:VCALENDAR`;
+    };
+
+    const icsContent = generateICS();
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `monoexpire-calendar-${new Date().toISOString().split('T')[0]}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // 导出数据
   const handleExport = () => {
@@ -288,6 +336,13 @@ export default function App() {
                         <Download className="w-4 h-4" />
                     </button>
                 </div>
+                <button 
+                    onClick={handleExportToCalendar}
+                    className="p-1.5 rounded-sm transition-all text-gray-400 hover:text-black hover:bg-white border border-gray-200 bg-gray-50"
+                    title="导出到日历"
+                >
+                    <Calendar className="w-4 h-4" />
+                </button>
             </div>
         </div>
       </header>

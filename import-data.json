@@ -1,0 +1,58 @@
+[
+  {
+    "id": "codex-001",
+    "name": "Codex",
+    "provider": "",
+    "expirationDate": "2025-12-09",
+    "notes": "还没怎么用",
+    "category": "ai"
+  },
+  {
+    "id": "windsurf-001",
+    "name": "Windsurf",
+    "provider": "WINDSURF",
+    "expirationDate": "2025-12-28",
+    "notes": "每年的",
+    "category": "ai"
+  },
+  {
+    "id": "kiro-001",
+    "name": "KIRO",
+    "provider": "KIRO",
+    "expirationDate": "2026-01-01",
+    "notes": "2000 积分",
+    "category": "ai"
+  },
+  {
+    "id": "chatgpt-001",
+    "name": "ChatGPT PLUS",
+    "provider": "OPEN AI",
+    "expirationDate": "2026-01-03",
+    "notes": "每月20刀",
+    "category": "ai"
+  },
+  {
+    "id": "gemini-xinke-001",
+    "name": "Gemini",
+    "provider": "GOOGLE",
+    "expirationDate": "2026-12-19",
+    "notes": "xinke",
+    "category": "ai"
+  },
+  {
+    "id": "cursor-001",
+    "name": "Cursor",
+    "provider": "CURSOR",
+    "expirationDate": "2025-12-29",
+    "notes": "没了就没了",
+    "category": "ai"
+  },
+  {
+    "id": "gemini-kexin-001",
+    "name": "Gemini",
+    "provider": "GOOGLE",
+    "expirationDate": "2026-08-27",
+    "notes": "可鑫",
+    "category": "ai"
+  }
+]
