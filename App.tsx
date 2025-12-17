@@ -129,6 +129,7 @@ const ManualModal = ({
 
 export default function App() {
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false); // 防止初始化时覆盖存储
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isSmartAddOpen, setIsSmartAddOpen] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -377,14 +378,17 @@ END:VCALENDAR`;
       // Sort by expiration date ascending (nearest first)
       const sorted = stored.sort((a, b) => new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
       setAccounts(sorted);
+      setIsLoaded(true); // 标记加载完成
     };
     loadAccounts();
   }, []);
 
-  // Save on change
+  // Save on change (只在加载完成后才保存)
   useEffect(() => {
-    saveAccountsToStorage(accounts);
-  }, [accounts]);
+    if (isLoaded) {
+      saveAccountsToStorage(accounts);
+    }
+  }, [accounts, isLoaded]);
 
   const handleAddAccount = (data: Omit<Account, 'id'>) => {
     const newAccount: Account = {

@@ -49,5 +49,9 @@
 	<string>MonoExpire 需要访问日历来添加订阅到期提醒</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>MonoExpire 需要访问日历来添加订阅到期提醒</string>
+	<key>WKAppBoundDomains</key>
+	<array>
+		<string>localhost</string>
+	</array>
 </dict>
 </plist>
