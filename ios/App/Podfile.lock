@@ -1,0 +1,53 @@
+PODS:
+  - Capacitor (7.4.4):
+    - CapacitorCordova
+  - CapacitorClipboard (7.0.3):
+    - Capacitor
+  - CapacitorCordova (7.4.4)
+  - CapacitorFilesystem (7.1.6):
+    - Capacitor
+    - IONFilesystemLib (~> 1.0.1)
+  - CapacitorShare (7.0.3):
+    - Capacitor
+  - EbarooniCapacitorCalendar (7.2.0):
+    - Capacitor
+  - IONFilesystemLib (1.0.1)
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorClipboard (from `../../node_modules/@capacitor/clipboard`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
+  - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
+  - "EbarooniCapacitorCalendar (from `../../node_modules/@ebarooni/capacitor-calendar`)"
+
+SPEC REPOS:
+  trunk:
+    - IONFilesystemLib
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorClipboard:
+    :path: "../../node_modules/@capacitor/clipboard"
+  CapacitorCordova:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorFilesystem:
+    :path: "../../node_modules/@capacitor/filesystem"
+  CapacitorShare:
+    :path: "../../node_modules/@capacitor/share"
+  EbarooniCapacitorCalendar:
+    :path: "../../node_modules/@ebarooni/capacitor-calendar"
+
+SPEC CHECKSUMS:
+  Capacitor: 358dd1c3fdd71d969547b17e159fd8a7736cb45f
+  CapacitorClipboard: 2a282bc14e8f47d430f2f9698ed95fbe25dcc21c
+  CapacitorCordova: bf648a636f3c153f652d312ae145fb508b6ffced
+  CapacitorFilesystem: 66f05ee0d8b1ccdc00d509091273a9b3b57c4a0b
+  CapacitorShare: a4f4f86eabd4b3ff52ba6a11b754713c6926a8d1
+  EbarooniCapacitorCalendar: 4568a8a318b940245bf6e257a8b115626581bb7d
+  IONFilesystemLib: 89258b8e3e85465da93127d25d7ce37f977e8a6f
+
+PODFILE CHECKSUM: a6f768bb8082d3a36da5c4aa9a49bae9f5eb8da8
+
+COCOAPODS: 1.16.2

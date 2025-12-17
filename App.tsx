@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Command, LayoutGrid, List as ListIcon, Search, Download, Upload, Calendar } from 'lucide-react';
+import { Plus, Command, LayoutGrid, List as ListIcon, Search, Download, Upload, Calendar, Share2 } from 'lucide-react';
+import { Share } from '@capacitor/share';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
+import { CapacitorCalendar } from '@ebarooni/capacitor-calendar';
 import { v4 as uuidv4 } from 'uuid';
 import { AccountCard } from './components/AccountCard';
 import { Button } from './components/Button';
 import { SmartAddModal } from './components/SmartAddModal';
-import { getStoredAccounts, saveAccountsToStorage } from './services/storageService';
+import { getStoredAccounts, saveAccountsToStorage, migrateFromLocalStorage } from './services/storageService';
 import { Account, ParsedAccountData } from './types';
 
 // Simple modal for manual add/edit to keep App.tsx cleaner
@@ -19,7 +23,7 @@ const ManualModal = ({
     onSave: (data: Omit<Account, 'id'>) => void;
     initialData?: Account;
 }) => {
-    const [formData, setFormData] = useState({ name: '', provider: '', expirationDate: '', notes: '' });
+    const [formData, setFormData] = useState({ name: '', provider: '', expirationDate: '', notes: '', refreshCycleDays: '', lastRefreshDate: '' });
 
     useEffect(() => {
         if (isOpen) {
@@ -28,10 +32,12 @@ const ManualModal = ({
                     name: initialData.name,
                     provider: initialData.provider || '',
                     expirationDate: initialData.expirationDate,
-                    notes: initialData.notes || ''
+                    notes: initialData.notes || '',
+                    refreshCycleDays: initialData.refreshCycleDays?.toString() || '',
+                    lastRefreshDate: initialData.lastRefreshDate || ''
                 });
             } else {
-                setFormData({ name: '', provider: '', expirationDate: '', notes: '' });
+                setFormData({ name: '', provider: '', expirationDate: '', notes: '', refreshCycleDays: '', lastRefreshDate: '' });
             }
         }
     }, [isOpen, initialData]);
@@ -81,12 +87,37 @@ const ManualModal = ({
                             onChange={e => setFormData({...formData, notes: e.target.value})}
                         />
                     </div>
+                    <div className="flex gap-2">
+                        <div className="flex-1">
+                            <label className="block text-sm font-medium mb-1">刷新周期 (天)</label>
+                            <input 
+                                type="number" 
+                                className="w-full p-2 border border-gray-300 focus:border-black focus:ring-0 outline-none transition-colors"
+                                placeholder="如30"
+                                value={formData.refreshCycleDays}
+                                onChange={e => setFormData({...formData, refreshCycleDays: e.target.value})}
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <label className="block text-sm font-medium mb-1">上次刷新日期</label>
+                            <input 
+                                type="date" 
+                                className="w-full p-2 border border-gray-300 focus:border-black focus:ring-0 outline-none transition-colors"
+                                value={formData.lastRefreshDate}
+                                onChange={e => setFormData({...formData, lastRefreshDate: e.target.value})}
+                            />
+                        </div>
+                    </div>
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
                     <Button variant="outline" onClick={onClose}>取消</Button>
                     <Button 
                         disabled={!formData.name || !formData.expirationDate}
-                        onClick={() => onSave(formData)}
+                        onClick={() => onSave({
+                            ...formData,
+                            refreshCycleDays: formData.refreshCycleDays ? parseInt(formData.refreshCycleDays) : undefined,
+                            lastRefreshDate: formData.lastRefreshDate || undefined
+                        })}
                     >
                         保存
                     </Button>
@@ -105,7 +136,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // 导出到日历 (ICS格式)
-  const handleExportToCalendar = () => {
+  const handleExportToCalendar = async () => {
     const generateICS = () => {
       const events = accounts.map(account => {
         const date = account.expirationDate.replace(/-/g, '');
@@ -143,25 +174,166 @@ END:VCALENDAR`;
     };
 
     const icsContent = generateICS();
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `monoexpire-calendar-${new Date().toISOString().split('T')[0]}.ics`;
-    a.click();
-    URL.revokeObjectURL(url);
+    
+    if (Capacitor.isNativePlatform()) {
+      // iOS/Android: 让用户选择日历，批量添加事件（去重），然后打开日历应用
+      try {
+        // 请求日历完整权限
+        await CapacitorCalendar.requestFullCalendarAccess();
+        
+        // 让用户选择日历
+        const selectedCalendars = await CapacitorCalendar.selectCalendarsWithPrompt({
+          displayStyle: 0 // single selection
+        });
+        
+        if (!selectedCalendars.result?.length) {
+          return; // 用户取消选择
+        }
+        
+        const calendarId = selectedCalendars.result[0].id;
+        
+        let addedCount = 0;
+        let skippedCount = 0;
+        
+        // 批量添加事件（检查重复）
+        for (const account of accounts) {
+          const startDate = new Date(account.expirationDate);
+          startDate.setHours(0, 0, 0, 0);
+          const endDate = new Date(startDate);
+          endDate.setDate(endDate.getDate() + 1);
+          const title = `${account.name} 订阅到期`;
+          
+          try {
+            // 检查该日期范围内是否已有相同标题的事件
+            const existingEvents = await CapacitorCalendar.listEventsInRange({
+              from: startDate.getTime(),
+              to: endDate.getTime()
+            });
+            
+            const isDuplicate = existingEvents.result?.some(
+              (event: any) => event.title === title
+            );
+            
+            if (!isDuplicate) {
+              await CapacitorCalendar.createEvent({
+                title: title,
+                calendarId: calendarId,
+                startDate: startDate.getTime(),
+                endDate: endDate.getTime(),
+                isAllDay: true,
+                description: account.notes || (account.provider ? `服务商: ${account.provider}` : ''),
+                alerts: [-(3 * 24 * 60), -(2 * 24 * 60), -(24 * 60), -60] // 提前3天、2天、1天、1小时提醒
+              });
+              addedCount++;
+            } else {
+              skippedCount++;
+            }
+            
+            // 添加刷新周期事件
+            if (account.refreshCycleDays && account.lastRefreshDate) {
+              const lastRefresh = new Date(account.lastRefreshDate);
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              
+              // 计算未来12个月内的所有刷新日期
+              let nextRefresh = new Date(lastRefresh);
+              while (nextRefresh <= today) {
+                nextRefresh.setDate(nextRefresh.getDate() + account.refreshCycleDays);
+              }
+              
+              // 添加未来3个刷新周期
+              for (let i = 0; i < 3; i++) {
+                const refreshDate = new Date(nextRefresh);
+                refreshDate.setDate(refreshDate.getDate() + i * account.refreshCycleDays);
+                const refreshEndDate = new Date(refreshDate);
+                refreshEndDate.setDate(refreshEndDate.getDate() + 1);
+                const refreshTitle = `${account.name} 用量刷新`;
+                
+                const existingRefreshEvents = await CapacitorCalendar.listEventsInRange({
+                  from: refreshDate.getTime(),
+                  to: refreshEndDate.getTime()
+                });
+                
+                const isRefreshDuplicate = existingRefreshEvents.result?.some(
+                  (event: any) => event.title === refreshTitle
+                );
+                
+                if (!isRefreshDuplicate) {
+                  await CapacitorCalendar.createEvent({
+                    title: refreshTitle,
+                    calendarId: calendarId,
+                    startDate: refreshDate.getTime(),
+                    endDate: refreshEndDate.getTime(),
+                    isAllDay: true,
+                    description: `每${account.refreshCycleDays}天刷新`,
+                    alerts: [-(24 * 60)] // 提前1天提醒
+                  });
+                  addedCount++;
+                }
+              }
+            }
+          } catch (e) {
+            // 忽略单个事件检查/添加失败
+          }
+        }
+        
+        // 打开日历应用
+        await CapacitorCalendar.openCalendar({ date: Date.now() });
+        
+        if (skippedCount > 0) {
+          alert(`已添加 ${addedCount} 个事件，跳过 ${skippedCount} 个已存在的事件`);
+        } else if (addedCount > 0) {
+          alert(`已添加 ${addedCount} 个事件`);
+        }
+      } catch (e: any) {
+        if (!e.message?.includes('denied') && !e.message?.includes('cancel')) {
+          alert('添加失败: ' + (e.message || e));
+        }
+      }
+    } else {
+      // Web: 使用下载
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `monoexpire-calendar-${new Date().toISOString().split('T')[0]}.ics`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   // 导出数据
-  const handleExport = () => {
+  const handleExport = async () => {
     const data = JSON.stringify(accounts, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `monoexpire-backup-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    
+    if (Capacitor.isNativePlatform()) {
+      // iOS/Android: 保存文件并分享
+      try {
+        const fileName = `monoexpire-backup-${new Date().toISOString().split('T')[0]}.json`;
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: data,
+          directory: Directory.Cache,
+          encoding: Encoding.UTF8
+        });
+        await Share.share({
+          title: 'MonoExpire 数据备份',
+          url: result.uri,
+          dialogTitle: '导出数据'
+        });
+      } catch (e: any) {
+        alert('导出失败: ' + (e.message || e));
+      }
+    } else {
+      // Web: 使用下载
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `monoexpire-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   // 导入数据
@@ -198,10 +370,15 @@ END:VCALENDAR`;
 
   // Initial Load
   useEffect(() => {
-    const stored = getStoredAccounts();
-    // Sort by expiration date ascending (nearest first)
-    const sorted = stored.sort((a, b) => new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
-    setAccounts(sorted);
+    const loadAccounts = async () => {
+      // 先迁移旧数据
+      await migrateFromLocalStorage();
+      const stored = await getStoredAccounts();
+      // Sort by expiration date ascending (nearest first)
+      const sorted = stored.sort((a, b) => new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
+      setAccounts(sorted);
+    };
+    loadAccounts();
   }, []);
 
   // Save on change
@@ -286,7 +463,7 @@ END:VCALENDAR`;
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b-2 border-black">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b-2 border-black pt-[env(safe-area-inset-top)]">
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-black text-white flex items-center justify-center font-bold text-xl tracking-tighter rounded-sm">
@@ -322,16 +499,16 @@ END:VCALENDAR`;
                 </div>
                 <div className="flex gap-1 border border-gray-200 p-1 rounded-sm bg-gray-50">
                     <button 
-                        onClick={handleImport}
+                        onClick={handleExport}
                         className="p-1.5 rounded-sm transition-all text-gray-400 hover:text-black hover:bg-white"
-                        title="导入数据"
+                        title="导出数据"
                     >
                         <Upload className="w-4 h-4" />
                     </button>
                     <button 
-                        onClick={handleExport}
+                        onClick={handleImport}
                         className="p-1.5 rounded-sm transition-all text-gray-400 hover:text-black hover:bg-white"
-                        title="导出数据"
+                        title="导入数据"
                     >
                         <Download className="w-4 h-4" />
                     </button>
@@ -363,23 +540,23 @@ END:VCALENDAR`;
         </div>
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-            <div className="p-4 border border-gray-200">
-                <p className="text-xs text-gray-500 uppercase font-semibold">总订阅数</p>
-                <p className="text-3xl font-bold mt-1">{accounts.length}</p>
+        <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6 md:mb-10">
+            <div className="p-2 md:p-4 border border-gray-200">
+                <p className="text-[10px] md:text-xs text-gray-500 uppercase font-semibold">总订阅数</p>
+                <p className="text-xl md:text-3xl font-bold mt-0.5 md:mt-1">{accounts.length}</p>
             </div>
-            <div className="p-4 border border-gray-200">
-                <p className="text-xs text-gray-500 uppercase font-semibold">即将到期 (7天内)</p>
-                <p className="text-3xl font-bold mt-1 text-black">
+            <div className="p-2 md:p-4 border border-gray-200">
+                <p className="text-[10px] md:text-xs text-gray-500 uppercase font-semibold">即将到期</p>
+                <p className="text-xl md:text-3xl font-bold mt-0.5 md:mt-1 text-black">
                     {accounts.filter(a => {
                         const days = (new Date(a.expirationDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24);
                         return days > 0 && days <= 7;
                     }).length}
                 </p>
             </div>
-            <div className="p-4 border border-gray-200">
-                 <p className="text-xs text-gray-500 uppercase font-semibold">已过期</p>
-                 <p className="text-3xl font-bold mt-1 text-gray-400">
+            <div className="p-2 md:p-4 border border-gray-200">
+                 <p className="text-[10px] md:text-xs text-gray-500 uppercase font-semibold">已过期</p>
+                 <p className="text-xl md:text-3xl font-bold mt-0.5 md:mt-1 text-gray-400">
                     {accounts.filter(a => new Date(a.expirationDate) < new Date()).length}
                  </p>
             </div>
@@ -392,7 +569,7 @@ END:VCALENDAR`;
                 <Button variant="outline" onClick={() => setIsSmartAddOpen(true)}>尝试 AI 导入</Button>
             </div>
         ) : (
-            <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-4"}>
                 {filteredAccounts.map(account => (
                     <AccountCard 
                         key={account.id} 
