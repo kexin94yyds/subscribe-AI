@@ -6,7 +6,7 @@ export interface Account {
   notes?: string;
   category?: 'ai' | 'tool' | 'subscription' | 'other';
   refreshCycleDays?: number; // 用量刷新周期（天），如30表示每月刷新
-  lastRefreshDate?: string; // 上次刷新日期
+  nextRefreshDate?: string; // 下次刷新日期
 }
 
 export enum ExpiryStatus {

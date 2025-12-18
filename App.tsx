@@ -23,7 +23,7 @@ const ManualModal = ({
     onSave: (data: Omit<Account, 'id'>) => void;
     initialData?: Account;
 }) => {
-    const [formData, setFormData] = useState({ name: '', provider: '', expirationDate: '', notes: '', refreshCycleDays: '', lastRefreshDate: '' });
+    const [formData, setFormData] = useState({ name: '', provider: '', expirationDate: '', notes: '', refreshCycleDays: '', nextRefreshDate: '' });
 
     useEffect(() => {
         if (isOpen) {
@@ -34,10 +34,10 @@ const ManualModal = ({
                     expirationDate: initialData.expirationDate,
                     notes: initialData.notes || '',
                     refreshCycleDays: initialData.refreshCycleDays?.toString() || '',
-                    lastRefreshDate: initialData.lastRefreshDate || ''
+                    nextRefreshDate: initialData.nextRefreshDate || ''
                 });
             } else {
-                setFormData({ name: '', provider: '', expirationDate: '', notes: '', refreshCycleDays: '', lastRefreshDate: '' });
+                setFormData({ name: '', provider: '', expirationDate: '', notes: '', refreshCycleDays: '', nextRefreshDate: '' });
             }
         }
     }, [isOpen, initialData]);
@@ -99,12 +99,12 @@ const ManualModal = ({
                             />
                         </div>
                         <div className="flex-1">
-                            <label className="block text-sm font-medium mb-1">上次刷新日期</label>
+                            <label className="block text-sm font-medium mb-1">下次刷新日期</label>
                             <input 
                                 type="date" 
                                 className="w-full p-2 border border-gray-300 focus:border-black focus:ring-0 outline-none transition-colors"
-                                value={formData.lastRefreshDate}
-                                onChange={e => setFormData({...formData, lastRefreshDate: e.target.value})}
+                                value={formData.nextRefreshDate}
+                                onChange={e => setFormData({...formData, nextRefreshDate: e.target.value})}
                             />
                         </div>
                     </div>
@@ -116,7 +116,7 @@ const ManualModal = ({
                         onClick={() => onSave({
                             ...formData,
                             refreshCycleDays: formData.refreshCycleDays ? parseInt(formData.refreshCycleDays) : undefined,
-                            lastRefreshDate: formData.lastRefreshDate || undefined
+                            nextRefreshDate: formData.nextRefreshDate || undefined
                         })}
                     >
                         保存
@@ -231,16 +231,9 @@ END:VCALENDAR`;
             }
             
             // 添加刷新周期事件
-            if (account.refreshCycleDays && account.lastRefreshDate) {
-              const lastRefresh = new Date(account.lastRefreshDate);
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              
-              // 计算未来12个月内的所有刷新日期
-              let nextRefresh = new Date(lastRefresh);
-              while (nextRefresh <= today) {
-                nextRefresh.setDate(nextRefresh.getDate() + account.refreshCycleDays);
-              }
+            if (account.refreshCycleDays && account.nextRefreshDate) {
+              let nextRefresh = new Date(account.nextRefreshDate);
+              nextRefresh.setHours(0, 0, 0, 0);
               
               // 添加未来3个刷新周期
               for (let i = 0; i < 3; i++) {

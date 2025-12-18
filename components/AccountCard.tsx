@@ -16,19 +16,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({ account, onDelete, onE
 
   // 计算刷新周期剩余天数
   let refreshDaysLeft: number | null = null;
-  if (account.refreshCycleDays && account.lastRefreshDate) {
-    const lastRefresh = parseISO(account.lastRefreshDate);
-    const nextRefresh = new Date(lastRefresh);
-    nextRefresh.setDate(nextRefresh.getDate() + account.refreshCycleDays);
+  if (account.nextRefreshDate) {
+    const nextRefresh = parseISO(account.nextRefreshDate);
     refreshDaysLeft = differenceInDays(nextRefresh, today);
-    if (refreshDaysLeft < 0) {
-      // 已经过了刷新日期，计算下一个周期
-      const daysSinceRefresh = differenceInDays(today, lastRefresh);
-      const cyclesPassed = Math.floor(daysSinceRefresh / account.refreshCycleDays);
-      const nextCycleStart = new Date(lastRefresh);
-      nextCycleStart.setDate(nextCycleStart.getDate() + (cyclesPassed + 1) * account.refreshCycleDays);
-      refreshDaysLeft = differenceInDays(nextCycleStart, today);
-    }
   }
 
   let status = ExpiryStatus.Active;
