@@ -11,16 +11,13 @@ interface ReminderModalProps {
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 
-const getRepeatOptions = (): { value: RepeatRule; label: string }[] => {
-  const today = new Date().getDay(); // 0=周日, 1=周一, ...
-  return [
-    { value: 'none', label: '不重复' },
-    { value: 'daily', label: '每天' },
-    { value: 'weekdays', label: '工作日' },
-    { value: 'weekly', label: `每周${WEEKDAYS[today]}` },
-    { value: 'custom', label: '自定义' },
-  ];
-};
+const REPEAT_OPTIONS: { value: RepeatRule; label: string }[] = [
+  { value: 'none', label: '不重复' },
+  { value: 'daily', label: '每天' },
+  { value: 'weekdays', label: '工作日' },
+  { value: 'weekly', label: '每周' },
+  { value: 'custom', label: '自定义' },
+];
 
 export const ReminderModal: React.FC<ReminderModalProps> = ({
   isOpen,
@@ -114,16 +111,37 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
                 setFormData({ ...formData, repeatRule: e.target.value as RepeatRule })
               }
             >
-              {getRepeatOptions().map((opt) => (
+              {REPEAT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
             </select>
           </div>
+          {formData.repeatRule === 'weekly' && (
+            <div>
+              <label className="block text-sm font-medium mb-2">选择周几</label>
+              <div className="flex gap-2">
+                {WEEKDAYS.map((day, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, customDays: [index] })}
+                    className={`w-9 h-9 rounded-full text-sm font-medium transition-colors ${
+                      formData.customDays.includes(index)
+                        ? 'bg-black text-white'
+                        : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {formData.repeatRule === 'custom' && (
             <div>
-              <label className="block text-sm font-medium mb-2">选择星期</label>
+              <label className="block text-sm font-medium mb-2">选择星期（可多选）</label>
               <div className="flex gap-2">
                 {WEEKDAYS.map((day, index) => (
                   <button
