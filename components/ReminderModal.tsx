@@ -27,30 +27,35 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     name: '',
-    time: '08:00',
+    times: ['08:00'] as string[],
     repeatRule: 'daily' as RepeatRule,
     customDays: [] as number[],
     notes: '',
   });
 
+  const [timeCount, setTimeCount] = useState(1);
+
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
+        const times = initialData.times || ['08:00'];
         setFormData({
           name: initialData.name,
-          time: initialData.time,
+          times: times,
           repeatRule: initialData.repeatRule,
           customDays: initialData.customDays || [],
           notes: initialData.notes || '',
         });
+        setTimeCount(times.length);
       } else {
         setFormData({
           name: '',
-          time: '08:00',
+          times: ['08:00'],
           repeatRule: 'daily',
           customDays: [],
           notes: '',
         });
+        setTimeCount(1);
       }
     }
   }, [isOpen, initialData]);
@@ -69,11 +74,29 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
   const handleSubmit = () => {
     onSave({
       name: formData.name,
-      time: formData.time,
+      times: formData.times.slice(0, timeCount),
       repeatRule: formData.repeatRule,
-      customDays: formData.repeatRule === 'custom' ? formData.customDays : undefined,
+      customDays: ['weekly', 'custom'].includes(formData.repeatRule) ? formData.customDays : undefined,
       notes: formData.notes || undefined,
     });
+  };
+
+  const updateTime = (index: number, value: string) => {
+    const newTimes = [...formData.times];
+    newTimes[index] = value;
+    setFormData({ ...formData, times: newTimes });
+  };
+
+  const handleTimeCountChange = (count: number) => {
+    setTimeCount(count);
+    // 确保 times 数组有足够的元素
+    if (formData.times.length < count) {
+      const newTimes = [...formData.times];
+      while (newTimes.length < count) {
+        newTimes.push('08:00');
+      }
+      setFormData({ ...formData, times: newTimes });
+    }
   };
 
   return (
@@ -94,13 +117,36 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">提醒时间</label>
-            <input
-              type="time"
-              className="w-full p-2 border border-gray-300 focus:border-black focus:ring-0 outline-none transition-colors"
-              value={formData.time}
-              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-            />
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium">提醒时间</label>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4].map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => handleTimeCountChange(count)}
+                    className={`px-2 py-0.5 text-xs font-mono font-bold transition-colors ${
+                      timeCount === count
+                        ? 'bg-black text-white'
+                        : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                  >
+                    ×{count}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              {Array.from({ length: timeCount }).map((_, index) => (
+                <input
+                  key={index}
+                  type="time"
+                  className="w-full p-2 border border-gray-300 focus:border-black focus:ring-0 outline-none transition-colors"
+                  value={formData.times[index] || '08:00'}
+                  onChange={(e) => updateTime(index, e.target.value)}
+                />
+              ))}
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">重复</label>
@@ -174,7 +220,7 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
           <Button variant="outline" onClick={onClose}>
             取消
           </Button>
-          <Button disabled={!formData.name || !formData.time} onClick={handleSubmit}>
+          <Button disabled={!formData.name || formData.times.length === 0} onClick={handleSubmit}>
             保存
           </Button>
         </div>

@@ -27,9 +27,9 @@ export interface Reminder {
   id: string;
   type: 'reminder';
   name: string;
-  time: string;              // HH:mm 格式
+  times: string[]; // 多个时间点，HH:mm 格式
   repeatRule: RepeatRule;
-  customDays?: number[];     // 自定义时的星期几 [0-6]，0=周日
+  customDays?: number[]; // 0-6 表示周日到周六
   notes?: string;
   isCompleted?: boolean;
   lastCompletedDate?: string; // 上次完成日期

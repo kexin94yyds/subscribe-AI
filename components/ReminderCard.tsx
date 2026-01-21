@@ -57,10 +57,12 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
       </div>
 
       <div className="mb-2 md:mb-4">
-        <div className="flex items-end gap-1">
-          <span className={`text-2xl md:text-4xl font-bold font-mono tracking-tighter ${completed ? 'text-gray-400' : 'text-black'}`}>
-            {reminder.time}
-          </span>
+        <div className="flex flex-wrap items-end gap-2">
+          {(reminder.times || [reminder.time]).map((t, index) => (
+            <span key={index} className={`text-xl md:text-3xl font-bold font-mono tracking-tighter ${completed ? 'text-gray-400' : 'text-black'}`}>
+              {t}
+            </span>
+          ))}
         </div>
       </div>
       
