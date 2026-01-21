@@ -22,6 +22,9 @@ export type RepeatRule =
   | 'weekly'         // 每周
   | 'custom';        // 自定义
 
+// 日历导出天数
+export type CalendarExportDays = 30 | 90 | 180 | 365;
+
 // 提醒
 export interface Reminder {
   id: string;
@@ -30,6 +33,7 @@ export interface Reminder {
   times: string[]; // 多个时间点，HH:mm 格式
   repeatRule: RepeatRule;
   customDays?: number[]; // 0-6 表示周日到周六
+  calendarDays?: CalendarExportDays; // 日历导出天数
   notes?: string;
   isCompleted?: boolean;
   lastCompletedDate?: string; // 上次完成日期

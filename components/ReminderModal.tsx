@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Reminder, RepeatRule } from '../types';
+import { Reminder, RepeatRule, CalendarExportDays } from '../types';
 import { Button } from './Button';
 
 interface ReminderModalProps {
@@ -30,6 +30,7 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
     times: ['08:00'] as string[],
     repeatRule: 'daily' as RepeatRule,
     customDays: [] as number[],
+    calendarDays: 30 as CalendarExportDays,
     notes: '',
   });
 
@@ -44,6 +45,7 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
           times: times,
           repeatRule: initialData.repeatRule,
           customDays: initialData.customDays || [],
+          calendarDays: initialData.calendarDays || 30,
           notes: initialData.notes || '',
         });
         setTimeCount(times.length);
@@ -53,6 +55,7 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
           times: ['08:00'],
           repeatRule: 'daily',
           customDays: [],
+          calendarDays: 30,
           notes: '',
         });
         setTimeCount(1);
@@ -77,6 +80,7 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
       times: formData.times.slice(0, timeCount),
       repeatRule: formData.repeatRule,
       customDays: ['weekly', 'custom'].includes(formData.repeatRule) ? formData.customDays : undefined,
+      calendarDays: formData.repeatRule !== 'none' ? formData.calendarDays : undefined,
       notes: formData.notes || undefined,
     });
   };
@@ -204,6 +208,28 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+          {formData.repeatRule !== 'none' && (
+            <div>
+              <label className="block text-sm font-medium mb-1">日历导出范围</label>
+              <div className="flex gap-2">
+                {([30, 90, 180, 365] as CalendarExportDays[]).map((days) => (
+                  <button
+                    key={days}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, calendarDays: days })}
+                    className={`flex-1 py-2 text-xs font-medium transition-colors ${
+                      formData.calendarDays === days
+                        ? 'bg-black text-white'
+                        : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                  >
+                    {days === 30 ? '30天' : days === 90 ? '3个月' : days === 180 ? '半年' : '1年'}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">导出到日历时创建的事件范围</p>
             </div>
           )}
           <div>
