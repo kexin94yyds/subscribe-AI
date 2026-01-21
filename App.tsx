@@ -706,7 +706,6 @@ END:VCALENDAR`;
                     M
                 </div>
                 <h1 className="text-2xl font-bold tracking-tight">MonoExpire</h1>
-                <PageTypeSelector value={pageType} onChange={setPageType} />
             </div>
 
             <div className="flex items-center gap-3 w-full md:w-auto">
@@ -757,6 +756,7 @@ END:VCALENDAR`;
                 >
                     <Calendar className="w-4 h-4" />
                 </button>
+                <PageTypeSelector value={pageType} onChange={setPageType} />
             </div>
         </div>
       </header>
