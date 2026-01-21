@@ -161,148 +161,138 @@ export default function App() {
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // 导出到日历 (ICS格式)
+  // 导出到日历 (ICS格式) - 根据当前页面类型导出
   const handleExportToCalendar = async () => {
-    const generateICS = () => {
-      const events = accounts.map(account => {
-        const date = account.expirationDate.replace(/-/g, '');
-        const uid = `${account.id}@monoexpire`;
-        const summary = `${account.name} 订阅到期`;
-        const description = account.notes ? account.notes.replace(/\n/g, '\\n') : '';
-        
-        return `BEGIN:VEVENT
-UID:${uid}
-DTSTART;VALUE=DATE:${date}
-DTEND;VALUE=DATE:${date}
-SUMMARY:${summary}
-DESCRIPTION:${description}${account.provider ? ' - ' + account.provider : ''}
-BEGIN:VALARM
-TRIGGER:-P3D
-ACTION:DISPLAY
-DESCRIPTION:${account.name} 将在3天后到期
-END:VALARM
-BEGIN:VALARM
-TRIGGER:-P1D
-ACTION:DISPLAY
-DESCRIPTION:${account.name} 明天到期
-END:VALARM
-END:VEVENT`;
-      }).join('\n');
-
-      return `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//MonoExpire//Subscription Tracker//CN
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-X-WR-CALNAME:MonoExpire 订阅提醒
-${events}
-END:VCALENDAR`;
-    };
-
-    const icsContent = generateICS();
-    
     if (Capacitor.isNativePlatform()) {
-      // iOS/Android: 让用户选择日历，批量添加事件（去重），然后打开日历应用
       try {
-        // 请求日历完整权限
         await CapacitorCalendar.requestFullCalendarAccess();
         
-        // 让用户选择日历
         const selectedCalendars = await CapacitorCalendar.selectCalendarsWithPrompt({
-          displayStyle: 0 // single selection
+          displayStyle: 0
         });
         
         if (!selectedCalendars.result?.length) {
-          return; // 用户取消选择
+          return;
         }
         
         const calendarId = selectedCalendars.result[0].id;
-        
         let addedCount = 0;
         let skippedCount = 0;
-        
-        // 批量添加事件（检查重复）
-        for (const account of accounts) {
-          const startDate = new Date(account.expirationDate);
-          startDate.setHours(0, 0, 0, 0);
-          const endDate = new Date(startDate);
-          endDate.setDate(endDate.getDate() + 1);
-          const title = `${account.name} 订阅到期`;
-          
-          try {
-            // 检查该日期范围内是否已有相同标题的事件
-            const existingEvents = await CapacitorCalendar.listEventsInRange({
-              from: startDate.getTime(),
-              to: endDate.getTime()
-            });
+
+        if (pageType === 'subscription') {
+          // 导出订阅
+          for (const account of accounts) {
+            const startDate = new Date(account.expirationDate);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 1);
+            const title = `${account.name} 订阅到期`;
             
-            const isDuplicate = existingEvents.result?.some(
-              (event: any) => event.title === title
-            );
-            
-            if (!isDuplicate) {
-              await CapacitorCalendar.createEvent({
-                title: title,
-                calendarId: calendarId,
-                startDate: startDate.getTime(),
-                endDate: endDate.getTime(),
-                isAllDay: true,
-                description: account.notes || (account.provider ? `服务商: ${account.provider}` : ''),
-                alerts: [-(3 * 24 * 60), -(2 * 24 * 60), -(24 * 60), -60] // 提前3天、2天、1天、1小时提醒
+            try {
+              const existingEvents = await CapacitorCalendar.listEventsInRange({
+                from: startDate.getTime(),
+                to: endDate.getTime()
               });
-              addedCount++;
-            } else {
-              skippedCount++;
-            }
-            
-            // 添加刷新周期事件
-            if (account.refreshCycleDays && account.nextRefreshDate) {
-              let nextRefresh = new Date(account.nextRefreshDate);
-              nextRefresh.setHours(0, 0, 0, 0);
               
-              // 添加未来3个刷新周期
-              for (let i = 0; i < 3; i++) {
-                const refreshDate = new Date(nextRefresh);
-                refreshDate.setDate(refreshDate.getDate() + i * account.refreshCycleDays);
-                const refreshEndDate = new Date(refreshDate);
-                refreshEndDate.setDate(refreshEndDate.getDate() + 1);
-                const refreshTitle = `${account.name} 用量刷新`;
-                
-                const existingRefreshEvents = await CapacitorCalendar.listEventsInRange({
-                  from: refreshDate.getTime(),
-                  to: refreshEndDate.getTime()
+              const isDuplicate = existingEvents.result?.some(
+                (event: any) => event.title === title
+              );
+              
+              if (!isDuplicate) {
+                await CapacitorCalendar.createEvent({
+                  title: title,
+                  calendarId: calendarId,
+                  startDate: startDate.getTime(),
+                  endDate: endDate.getTime(),
+                  isAllDay: true,
+                  description: account.notes || (account.provider ? `服务商: ${account.provider}` : ''),
+                  alerts: [-(3 * 24 * 60), -(2 * 24 * 60), -(24 * 60), -60]
                 });
-                
-                const isRefreshDuplicate = existingRefreshEvents.result?.some(
-                  (event: any) => event.title === refreshTitle
-                );
-                
-                if (!isRefreshDuplicate) {
-                  await CapacitorCalendar.createEvent({
-                    title: refreshTitle,
-                    calendarId: calendarId,
-                    startDate: refreshDate.getTime(),
-                    endDate: refreshEndDate.getTime(),
-                    isAllDay: true,
-                    description: `每${account.refreshCycleDays}天刷新`,
-                    alerts: [-(24 * 60)] // 提前1天提醒
-                  });
-                  addedCount++;
-                }
+                addedCount++;
+              } else {
+                skippedCount++;
               }
+            } catch (e) {}
+          }
+        } else if (pageType === 'reminder') {
+          // 导出提醒 - 创建事件（从今天开始）
+          for (const reminder of reminders) {
+            const times = reminder.times || ['08:00'];
+            for (const time of times) {
+              const [hours, minutes] = time.split(':').map(Number);
+              const today = new Date();
+              today.setHours(hours, minutes, 0, 0);
+              const endTime = new Date(today);
+              endTime.setMinutes(endTime.getMinutes() + 30);
+              
+              const repeatText = reminder.repeatRule === 'daily' ? '每天' : 
+                reminder.repeatRule === 'weekdays' ? '工作日' : 
+                reminder.repeatRule === 'weekly' ? '每周' : 
+                reminder.repeatRule === 'custom' ? '自定义' : '';
+              const title = `${reminder.name}`;
+              
+              try {
+                await CapacitorCalendar.createEvent({
+                  title: title,
+                  calendarId: calendarId,
+                  startDate: today.getTime(),
+                  endDate: endTime.getTime(),
+                  isAllDay: false,
+                  description: `${repeatText}${reminder.notes ? ' - ' + reminder.notes : ''}`,
+                  alerts: [-5]
+                });
+                addedCount++;
+              } catch (e) {}
             }
-          } catch (e) {
-            // 忽略单个事件检查/添加失败
+          }
+        } else if (pageType === 'goal') {
+          // 导出目标 - 截止日期事件
+          for (const goal of goals) {
+            if (goal.isCompleted) continue; // 跳过已完成的目标
+            
+            const startDate = new Date(goal.deadline);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 1);
+            const title = `🎯 ${goal.name} 截止`;
+            
+            try {
+              const existingEvents = await CapacitorCalendar.listEventsInRange({
+                from: startDate.getTime(),
+                to: endDate.getTime()
+              });
+              
+              const isDuplicate = existingEvents.result?.some(
+                (event: any) => event.title === title
+              );
+              
+              if (!isDuplicate) {
+                await CapacitorCalendar.createEvent({
+                  title: title,
+                  calendarId: calendarId,
+                  startDate: startDate.getTime(),
+                  endDate: endDate.getTime(),
+                  isAllDay: true,
+                  description: goal.notes || '',
+                  alerts: [-(7 * 24 * 60), -(3 * 24 * 60), -(24 * 60)]
+                });
+                addedCount++;
+              } else {
+                skippedCount++;
+              }
+            } catch (e) {}
           }
         }
         
-        // 打开日历应用
         await CapacitorCalendar.openCalendar({ date: Date.now() });
         
+        const typeLabel = pageType === 'subscription' ? '订阅' : pageType === 'reminder' ? '提醒' : '目标';
         if (skippedCount > 0) {
-          alert(`已添加 ${addedCount} 个事件，跳过 ${skippedCount} 个已存在的事件`);
+          alert(`已添加 ${addedCount} 个${typeLabel}事件，跳过 ${skippedCount} 个已存在的事件`);
         } else if (addedCount > 0) {
-          alert(`已添加 ${addedCount} 个事件`);
+          alert(`已添加 ${addedCount} 个${typeLabel}事件`);
+        } else {
+          alert(`没有${typeLabel}需要导出`);
         }
       } catch (e: any) {
         if (!e.message?.includes('denied') && !e.message?.includes('cancel')) {
@@ -310,14 +300,7 @@ END:VCALENDAR`;
         }
       }
     } else {
-      // Web: 使用下载
-      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `monoexpire-calendar-${new Date().toISOString().split('T')[0]}.ics`;
-      a.click();
-      URL.revokeObjectURL(url);
+      alert('日历导出仅支持 iOS/Android 设备');
     }
   };
 
