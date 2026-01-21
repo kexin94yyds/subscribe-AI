@@ -7,10 +7,10 @@ interface PageTypeSelectorProps {
   onChange: (type: PageType) => void;
 }
 
-const PAGE_TYPE_CONFIG: Record<PageType, { label: string; icon: string }> = {
-  subscription: { label: '订阅', icon: '📋' },
-  reminder: { label: '提醒', icon: '⏰' },
-  goal: { label: '目标', icon: '🎯' },
+const PAGE_TYPE_CONFIG: Record<PageType, { label: string }> = {
+  subscription: { label: '订阅' },
+  reminder: { label: '提醒' },
+  goal: { label: '目标' },
 };
 
 export const PageTypeSelector: React.FC<PageTypeSelectorProps> = ({ value, onChange }) => {
@@ -35,7 +35,6 @@ export const PageTypeSelector: React.FC<PageTypeSelectorProps> = ({ value, onCha
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-sm font-medium"
       >
-        <span>{currentConfig.icon}</span>
         <span>{currentConfig.label}</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -58,7 +57,6 @@ export const PageTypeSelector: React.FC<PageTypeSelectorProps> = ({ value, onCha
                     : 'hover:bg-gray-50'
                 }`}
               >
-                <span>{config.icon}</span>
                 <span className="font-medium">{config.label}</span>
               </button>
             );
