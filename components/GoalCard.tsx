@@ -91,7 +91,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
             className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium border transition-colors ${
               goal.isCompleted 
                 ? 'border-gray-300 hover:bg-gray-100' 
-                : 'border-green-500 bg-green-500 text-white hover:bg-green-600'
+                : 'border-black bg-black text-white hover:bg-gray-800'
             }`}
           >
             <CheckCircle className="w-3 h-3" /> {goal.isCompleted ? '已完成' : '完成'}

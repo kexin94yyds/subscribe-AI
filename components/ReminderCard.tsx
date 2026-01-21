@@ -77,7 +77,7 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
             className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium border transition-colors ${
               completed 
                 ? 'border-gray-300 hover:bg-gray-100' 
-                : 'border-green-500 bg-green-500 text-white hover:bg-green-600'
+                : 'border-black bg-black text-white hover:bg-gray-800'
             }`}
           >
             <Check className="w-3 h-3" /> {completed ? '已完成' : '完成'}
