@@ -1,15 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Command, LayoutGrid, List as ListIcon, Search, Download, Upload, Calendar, Share2 } from 'lucide-react';
+import { Plus, Command, LayoutGrid, List as ListIcon, Search, Download, Upload, Calendar } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { CapacitorCalendar } from '@ebarooni/capacitor-calendar';
 import { v4 as uuidv4 } from 'uuid';
 import { AccountCard } from './components/AccountCard';
+import { ReminderCard } from './components/ReminderCard';
+import { GoalCard } from './components/GoalCard';
 import { Button } from './components/Button';
 import { SmartAddModal } from './components/SmartAddModal';
-import { getStoredAccounts, saveAccountsToStorage, migrateFromLocalStorage } from './services/storageService';
-import { Account, ParsedAccountData } from './types';
+import { ReminderModal } from './components/ReminderModal';
+import { GoalModal } from './components/GoalModal';
+import { PageTypeSelector } from './components/PageTypeSelector';
+import { 
+  getStoredAccounts, 
+  saveAccountsToStorage, 
+  migrateFromLocalStorage,
+  getStoredReminders,
+  saveRemindersToStorage,
+  getStoredGoals,
+  saveGoalsToStorage
+} from './services/storageService';
+import { Account, Reminder, Goal, PageType, ParsedAccountData } from './types';
 
 // Simple modal for manual add/edit to keep App.tsx cleaner
 const ManualModal = ({ 
@@ -114,6 +127,7 @@ const ManualModal = ({
                     <Button 
                         disabled={!formData.name || !formData.expirationDate}
                         onClick={() => onSave({
+                            type: 'subscription',
                             ...formData,
                             refreshCycleDays: formData.refreshCycleDays ? parseInt(formData.refreshCycleDays) : undefined,
                             nextRefreshDate: formData.nextRefreshDate || undefined
@@ -129,11 +143,18 @@ const ManualModal = ({
 
 export default function App() {
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoaded, setIsLoaded] = useState(false); // 防止初始化时覆盖存储
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [pageType, setPageType] = useState<PageType>('subscription');
   const [isSmartAddOpen, setIsSmartAddOpen] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
+  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined);
+  const [editingReminder, setEditingReminder] = useState<Reminder | undefined>(undefined);
+  const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
 
   // 导出到日历 (ICS格式)
@@ -364,16 +385,31 @@ END:VCALENDAR`;
 
   // Initial Load
   useEffect(() => {
-    const loadAccounts = async () => {
+    const loadAllData = async () => {
       // 先迁移旧数据
       await migrateFromLocalStorage();
-      const stored = await getStoredAccounts();
-      // Sort by expiration date ascending (nearest first)
-      const sorted = stored.sort((a, b) => new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
-      setAccounts(sorted);
-      setIsLoaded(true); // 标记加载完成
+      
+      // 加载订阅
+      const storedAccounts = await getStoredAccounts();
+      const sortedAccounts = storedAccounts.sort((a, b) => 
+        new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime()
+      );
+      setAccounts(sortedAccounts);
+      
+      // 加载提醒
+      const storedReminders = await getStoredReminders();
+      setReminders(storedReminders);
+      
+      // 加载目标
+      const storedGoals = await getStoredGoals();
+      const sortedGoals = storedGoals.sort((a, b) => 
+        new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+      );
+      setGoals(sortedGoals);
+      
+      setIsLoaded(true);
     };
-    loadAccounts();
+    loadAllData();
   }, []);
 
   // Save on change (只在加载完成后才保存)
@@ -382,6 +418,18 @@ END:VCALENDAR`;
       saveAccountsToStorage(accounts);
     }
   }, [accounts, isLoaded]);
+
+  useEffect(() => {
+    if (isLoaded) {
+      saveRemindersToStorage(reminders);
+    }
+  }, [reminders, isLoaded]);
+
+  useEffect(() => {
+    if (isLoaded) {
+      saveGoalsToStorage(goals);
+    }
+  }, [goals, isLoaded]);
 
   const handleAddAccount = (data: Omit<Account, 'id'>) => {
     const newAccount: Account = {
@@ -416,24 +464,15 @@ END:VCALENDAR`;
   const handleSmartDataParsed = (data: ParsedAccountData) => {
     // Open manual modal pre-filled with parsed data for confirmation
     setEditingAccount(undefined); // Ensure we are in "add" mode not "edit"
-    // We need to pass this data to the manual modal. 
-    // Since ManualModal takes initialData, we can use a temporary state or just repurpose editingAccount logic carefully.
-    // However, clean way:
     const tempAccount: Account = {
         id: '', // dummy
+        type: 'subscription',
         name: data.name,
         expirationDate: data.expirationDate,
         notes: data.notes,
         provider: ''
     };
     setEditingAccount(tempAccount); 
-    // Wait, editingAccount implies updating an existing ID. 
-    // Let's modify ManualModal usage slightly or accept that we treat it as "Edit a draft".
-    // Better: split the state or reuse editingAccount but check ID.
-    // Actually, let's just use the state hook inside ManualModal. 
-    // To keep it simple: We will set `editingAccount` to this temp object, 
-    // but when saving, if ID is empty, we treat as new.
-    
     setIsManualModalOpen(true);
   };
   
@@ -452,10 +491,210 @@ END:VCALENDAR`;
     setEditingAccount(undefined);
   };
 
+  // ========== 提醒处理 ==========
+  const handleAddReminder = (data: Omit<Reminder, 'id' | 'type'>) => {
+    const newReminder: Reminder = {
+      id: uuidv4(),
+      type: 'reminder',
+      ...data
+    };
+    setReminders(prev => [...prev, newReminder]);
+    setIsReminderModalOpen(false);
+  };
+
+  const handleUpdateReminder = (data: Omit<Reminder, 'id' | 'type'>) => {
+    if (!editingReminder) return;
+    setReminders(prev => prev.map(r => 
+      r.id === editingReminder.id ? { ...data, id: editingReminder.id, type: 'reminder' as const } : r
+    ));
+    setEditingReminder(undefined);
+    setIsReminderModalOpen(false);
+  };
+
+  const handleDeleteReminder = (id: string) => {
+    if (window.confirm('确定要删除这个提醒吗？')) {
+      setReminders(prev => prev.filter(r => r.id !== id));
+    }
+  };
+
+  const handleEditReminder = (reminder: Reminder) => {
+    setEditingReminder(reminder);
+    setIsReminderModalOpen(true);
+  };
+
+  const handleToggleReminderComplete = (id: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    setReminders(prev => prev.map(r => {
+      if (r.id !== id) return r;
+      const isCompletedToday = r.lastCompletedDate === today;
+      return {
+        ...r,
+        lastCompletedDate: isCompletedToday ? undefined : today
+      };
+    }));
+  };
+
+  const handleSaveReminder = (data: Omit<Reminder, 'id' | 'type'>) => {
+    if (editingReminder) {
+      handleUpdateReminder(data);
+    } else {
+      handleAddReminder(data);
+    }
+    setEditingReminder(undefined);
+  };
+
+  const handleCloseReminder = () => {
+    setIsReminderModalOpen(false);
+    setEditingReminder(undefined);
+  };
+
+  // ========== 目标处理 ==========
+  const handleAddGoal = (data: Omit<Goal, 'id' | 'type'>) => {
+    const newGoal: Goal = {
+      id: uuidv4(),
+      type: 'goal',
+      ...data
+    };
+    setGoals(prev => {
+      const updated = [...prev, newGoal];
+      return updated.sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+    });
+    setIsGoalModalOpen(false);
+  };
+
+  const handleUpdateGoal = (data: Omit<Goal, 'id' | 'type'>) => {
+    if (!editingGoal) return;
+    setGoals(prev => prev.map(g => 
+      g.id === editingGoal.id ? { ...data, id: editingGoal.id, type: 'goal' as const } : g
+    ));
+    setEditingGoal(undefined);
+    setIsGoalModalOpen(false);
+  };
+
+  const handleDeleteGoal = (id: string) => {
+    if (window.confirm('确定要删除这个目标吗？')) {
+      setGoals(prev => prev.filter(g => g.id !== id));
+    }
+  };
+
+  const handleEditGoal = (goal: Goal) => {
+    setEditingGoal(goal);
+    setIsGoalModalOpen(true);
+  };
+
+  const handleToggleGoalComplete = (id: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    setGoals(prev => prev.map(g => {
+      if (g.id !== id) return g;
+      return {
+        ...g,
+        isCompleted: !g.isCompleted,
+        completedDate: !g.isCompleted ? today : undefined
+      };
+    }));
+  };
+
+  const handleSaveGoal = (data: Omit<Goal, 'id' | 'type'>) => {
+    if (editingGoal) {
+      handleUpdateGoal(data);
+    } else {
+      handleAddGoal(data);
+    }
+    setEditingGoal(undefined);
+  };
+
+  const handleCloseGoal = () => {
+    setIsGoalModalOpen(false);
+    setEditingGoal(undefined);
+  };
+
+  // ========== 根据页面类型打开对应的添加弹窗 ==========
+  const handleAddClick = () => {
+    switch (pageType) {
+      case 'subscription':
+        setIsManualModalOpen(true);
+        break;
+      case 'reminder':
+        setIsReminderModalOpen(true);
+        break;
+      case 'goal':
+        setIsGoalModalOpen(true);
+        break;
+    }
+  };
+
+  // ========== 获取按钮文字 ==========
+  const getAddButtonText = () => {
+    switch (pageType) {
+      case 'subscription': return '添加订阅';
+      case 'reminder': return '添加提醒';
+      case 'goal': return '添加目标';
+    }
+  };
+
+  // ========== 获取搜索占位符 ==========
+  const getSearchPlaceholder = () => {
+    switch (pageType) {
+      case 'subscription': return '搜索订阅...';
+      case 'reminder': return '搜索提醒...';
+      case 'goal': return '搜索目标...';
+    }
+  };
+
   const filteredAccounts = accounts.filter(acc => 
     acc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     acc.notes?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const filteredReminders = reminders.filter(r => 
+    r.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    r.notes?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredGoals = goals.filter(g => 
+    g.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    g.notes?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // ========== 统计数据 ==========
+  const getStats = () => {
+    switch (pageType) {
+      case 'subscription': {
+        const expiringSoon = accounts.filter(a => {
+          const days = (new Date(a.expirationDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24);
+          return days > 0 && days <= 7;
+        }).length;
+        const expired = accounts.filter(a => new Date(a.expirationDate) < new Date()).length;
+        return [
+          { label: '总订阅数', value: accounts.length },
+          { label: '即将到期', value: expiringSoon },
+          { label: '已过期', value: expired, muted: true }
+        ];
+      }
+      case 'reminder': {
+        const today = new Date().toISOString().split('T')[0];
+        const completedToday = reminders.filter(r => r.lastCompletedDate === today).length;
+        const pending = reminders.length - completedToday;
+        return [
+          { label: '总提醒数', value: reminders.length },
+          { label: '待完成', value: pending },
+          { label: '今日已完成', value: completedToday, muted: true }
+        ];
+      }
+      case 'goal': {
+        const completed = goals.filter(g => g.isCompleted).length;
+        const overdue = goals.filter(g => !g.isCompleted && new Date(g.deadline) < new Date()).length;
+        const inProgress = goals.length - completed;
+        return [
+          { label: '总目标数', value: goals.length },
+          { label: '进行中', value: inProgress },
+          { label: '已完成', value: completed, muted: true }
+        ];
+      }
+    }
+  };
+
+  const stats = getStats();
 
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white">
@@ -467,6 +706,7 @@ END:VCALENDAR`;
                     M
                 </div>
                 <h1 className="text-2xl font-bold tracking-tight">MonoExpire</h1>
+                <PageTypeSelector value={pageType} onChange={setPageType} />
             </div>
 
             <div className="flex items-center gap-3 w-full md:w-auto">
@@ -474,7 +714,7 @@ END:VCALENDAR`;
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input 
                         type="text"
-                        placeholder="搜索订阅..."
+                        placeholder={getSearchPlaceholder()}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-9 pr-4 py-2 border border-gray-200 focus:border-black outline-none transition-colors bg-gray-50 focus:bg-white text-sm"
@@ -526,46 +766,38 @@ END:VCALENDAR`;
         
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
-            <Button onClick={() => setIsManualModalOpen(true)} className="flex-1 sm:flex-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-black transition-all active:translate-y-[4px] active:shadow-none">
+            <Button onClick={handleAddClick} className="flex-1 sm:flex-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-black transition-all active:translate-y-[4px] active:shadow-none">
                 <Plus className="w-4 h-4 mr-2" />
-                手动记录
+                {getAddButtonText()}
             </Button>
-            <Button variant="outline" onClick={() => setIsSmartAddOpen(true)} className="flex-1 sm:flex-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-[4px] active:shadow-none">
-                <Command className="w-4 h-4 mr-2" />
-                AI 智能导入
-            </Button>
+            {pageType === 'subscription' && (
+              <Button variant="outline" onClick={() => setIsSmartAddOpen(true)} className="flex-1 sm:flex-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-[4px] active:shadow-none">
+                  <Command className="w-4 h-4 mr-2" />
+                  AI 智能导入
+              </Button>
+            )}
         </div>
 
         {/* Stats Summary */}
         <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6 md:mb-10">
-            <div className="p-2 md:p-4 border border-gray-200">
-                <p className="text-[10px] md:text-xs text-gray-500 uppercase font-semibold">总订阅数</p>
-                <p className="text-xl md:text-3xl font-bold mt-0.5 md:mt-1">{accounts.length}</p>
-            </div>
-            <div className="p-2 md:p-4 border border-gray-200">
-                <p className="text-[10px] md:text-xs text-gray-500 uppercase font-semibold">即将到期</p>
-                <p className="text-xl md:text-3xl font-bold mt-0.5 md:mt-1 text-black">
-                    {accounts.filter(a => {
-                        const days = (new Date(a.expirationDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24);
-                        return days > 0 && days <= 7;
-                    }).length}
+            {stats.map((stat, index) => (
+              <div key={index} className="p-2 md:p-4 border border-gray-200">
+                <p className="text-[10px] md:text-xs text-gray-500 uppercase font-semibold">{stat.label}</p>
+                <p className={`text-xl md:text-3xl font-bold mt-0.5 md:mt-1 ${stat.muted ? 'text-gray-400' : 'text-black'}`}>
+                  {stat.value}
                 </p>
-            </div>
-            <div className="p-2 md:p-4 border border-gray-200">
-                 <p className="text-[10px] md:text-xs text-gray-500 uppercase font-semibold">已过期</p>
-                 <p className="text-xl md:text-3xl font-bold mt-0.5 md:mt-1 text-gray-400">
-                    {accounts.filter(a => new Date(a.expirationDate) < new Date()).length}
-                 </p>
-            </div>
+              </div>
+            ))}
         </div>
 
         {/* List */}
-        {filteredAccounts.length === 0 ? (
+        {pageType === 'subscription' && (
+          filteredAccounts.length === 0 ? (
             <div className="text-center py-20 border-2 border-dashed border-gray-200 rounded-sm">
                 <p className="text-gray-400 mb-4">暂无订阅记录</p>
                 <Button variant="outline" onClick={() => setIsSmartAddOpen(true)}>尝试 AI 导入</Button>
             </div>
-        ) : (
+          ) : (
             <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-4"}>
                 {filteredAccounts.map(account => (
                     <AccountCard 
@@ -576,6 +808,49 @@ END:VCALENDAR`;
                     />
                 ))}
             </div>
+          )
+        )}
+
+        {pageType === 'reminder' && (
+          filteredReminders.length === 0 ? (
+            <div className="text-center py-20 border-2 border-dashed border-gray-200 rounded-sm">
+                <p className="text-gray-400 mb-4">暂无提醒</p>
+                <Button variant="outline" onClick={() => setIsReminderModalOpen(true)}>添加提醒</Button>
+            </div>
+          ) : (
+            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-4"}>
+                {filteredReminders.map(reminder => (
+                    <ReminderCard 
+                        key={reminder.id} 
+                        reminder={reminder} 
+                        onDelete={handleDeleteReminder}
+                        onEdit={handleEditReminder}
+                        onToggleComplete={handleToggleReminderComplete}
+                    />
+                ))}
+            </div>
+          )
+        )}
+
+        {pageType === 'goal' && (
+          filteredGoals.length === 0 ? (
+            <div className="text-center py-20 border-2 border-dashed border-gray-200 rounded-sm">
+                <p className="text-gray-400 mb-4">暂无目标</p>
+                <Button variant="outline" onClick={() => setIsGoalModalOpen(true)}>添加目标</Button>
+            </div>
+          ) : (
+            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-4"}>
+                {filteredGoals.map(goal => (
+                    <GoalCard 
+                        key={goal.id} 
+                        goal={goal} 
+                        onDelete={handleDeleteGoal}
+                        onEdit={handleEditGoal}
+                        onToggleComplete={handleToggleGoalComplete}
+                    />
+                ))}
+            </div>
+          )
         )}
       </main>
 
@@ -596,6 +871,20 @@ END:VCALENDAR`;
         onClose={handleCloseManual}
         onSave={handleSave}
         initialData={editingAccount}
+      />
+
+      <ReminderModal
+        isOpen={isReminderModalOpen}
+        onClose={handleCloseReminder}
+        onSave={handleSaveReminder}
+        initialData={editingReminder}
+      />
+
+      <GoalModal
+        isOpen={isGoalModalOpen}
+        onClose={handleCloseGoal}
+        onSave={handleSaveGoal}
+        initialData={editingGoal}
       />
     </div>
   );
