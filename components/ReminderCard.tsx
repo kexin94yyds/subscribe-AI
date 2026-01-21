@@ -71,16 +71,12 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
       )}
 
       <div className="flex gap-1 md:gap-2 mt-auto pt-2 md:pt-4 border-t border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
-        {onToggleComplete && (
+        {onToggleComplete && !completed && (
           <button 
             onClick={() => onToggleComplete(reminder.id)}
-            className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium border transition-colors ${
-              completed 
-                ? 'border-gray-300 hover:bg-gray-100' 
-                : 'border-black bg-black text-white hover:bg-gray-800'
-            }`}
+            className="flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium border border-black bg-black text-white hover:bg-gray-800 transition-colors"
           >
-            <Check className="w-3 h-3" /> {completed ? '已完成' : '完成'}
+            <Check className="w-3 h-3" /> 完成
           </button>
         )}
         <button 
