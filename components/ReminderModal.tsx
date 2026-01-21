@@ -13,7 +13,6 @@ const REPEAT_OPTIONS: { value: RepeatRule; label: string }[] = [
   { value: 'none', label: '不重复' },
   { value: 'daily', label: '每天' },
   { value: 'weekdays', label: '工作日' },
-  { value: 'weekly', label: '每周' },
   { value: 'custom', label: '自定义' },
 ];
 
