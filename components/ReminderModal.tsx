@@ -9,14 +9,18 @@ interface ReminderModalProps {
   initialData?: Reminder;
 }
 
-const REPEAT_OPTIONS: { value: RepeatRule; label: string }[] = [
-  { value: 'none', label: '不重复' },
-  { value: 'daily', label: '每天' },
-  { value: 'weekdays', label: '工作日' },
-  { value: 'custom', label: '自定义' },
-];
-
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
+
+const getRepeatOptions = (): { value: RepeatRule; label: string }[] => {
+  const today = new Date().getDay(); // 0=周日, 1=周一, ...
+  return [
+    { value: 'none', label: '不重复' },
+    { value: 'daily', label: '每天' },
+    { value: 'weekdays', label: '工作日' },
+    { value: 'weekly', label: `每周${WEEKDAYS[today]}` },
+    { value: 'custom', label: '自定义' },
+  ];
+};
 
 export const ReminderModal: React.FC<ReminderModalProps> = ({
   isOpen,
@@ -110,7 +114,7 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
                 setFormData({ ...formData, repeatRule: e.target.value as RepeatRule })
               }
             >
-              {REPEAT_OPTIONS.map((opt) => (
+              {getRepeatOptions().map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
