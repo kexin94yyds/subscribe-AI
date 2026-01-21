@@ -147,7 +147,11 @@ export default function App() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoaded, setIsLoaded] = useState(false); // 防止初始化时覆盖存储
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [pageType, setPageType] = useState<PageType>('subscription');
+  const [pageType, setPageType] = useState<PageType>(() => {
+    // 从 localStorage 读取上次选择的页面类型
+    const saved = localStorage.getItem('monoexpire_page_type');
+    return (saved as PageType) || 'subscription';
+  });
   const [isSmartAddOpen, setIsSmartAddOpen] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
@@ -430,6 +434,11 @@ END:VCALENDAR`;
       saveGoalsToStorage(goals);
     }
   }, [goals, isLoaded]);
+
+  // 保存页面类型到 localStorage
+  useEffect(() => {
+    localStorage.setItem('monoexpire_page_type', pageType);
+  }, [pageType]);
 
   const handleAddAccount = (data: Omit<Account, 'id'>) => {
     const newAccount: Account = {
