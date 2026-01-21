@@ -215,8 +215,20 @@ export default function App() {
             } catch (e) {}
           }
         } else if (pageType === 'reminder') {
-          // 导出提醒 - 创建未来30天的事件
-          const DAYS_TO_CREATE = 30;
+          // 导出提醒 - 让用户选择创建多少天
+          const daysChoice = prompt(
+            '请选择要创建多少天的提醒事件：\n\n' +
+            '1. 30 天\n' +
+            '2. 90 天（3 个月）\n' +
+            '3. 180 天（半年）\n' +
+            '4. 365 天（1 年）\n\n' +
+            '请输入数字 1-4：',
+            '1'
+          );
+          
+          const daysMap: Record<string, number> = { '1': 30, '2': 90, '3': 180, '4': 365 };
+          const DAYS_TO_CREATE = daysMap[daysChoice || '1'] || 30;
+          
           for (const reminder of reminders) {
             const times = reminder.times || ['08:00'];
             
