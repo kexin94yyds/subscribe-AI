@@ -215,34 +215,54 @@ export default function App() {
             } catch (e) {}
           }
         } else if (pageType === 'reminder') {
-          // 导出提醒 - 创建事件（从今天开始）
+          // 导出提醒 - 创建未来30天的事件
+          const DAYS_TO_CREATE = 30;
           for (const reminder of reminders) {
             const times = reminder.times || ['08:00'];
-            for (const time of times) {
-              const [hours, minutes] = time.split(':').map(Number);
-              const today = new Date();
-              today.setHours(hours, minutes, 0, 0);
-              const endTime = new Date(today);
-              endTime.setMinutes(endTime.getMinutes() + 30);
+            
+            for (let dayOffset = 0; dayOffset < DAYS_TO_CREATE; dayOffset++) {
+              const eventDate = new Date();
+              eventDate.setDate(eventDate.getDate() + dayOffset);
+              const dayOfWeek = eventDate.getDay(); // 0=周日, 1=周一, ...
               
-              const repeatText = reminder.repeatRule === 'daily' ? '每天' : 
-                reminder.repeatRule === 'weekdays' ? '工作日' : 
-                reminder.repeatRule === 'weekly' ? '每周' : 
-                reminder.repeatRule === 'custom' ? '自定义' : '';
-              const title = `${reminder.name}`;
+              // 根据重复规则判断是否需要创建事件
+              let shouldCreate = false;
+              if (reminder.repeatRule === 'none' && dayOffset === 0) {
+                shouldCreate = true;
+              } else if (reminder.repeatRule === 'daily') {
+                shouldCreate = true;
+              } else if (reminder.repeatRule === 'weekdays') {
+                shouldCreate = dayOfWeek >= 1 && dayOfWeek <= 5;
+              } else if (reminder.repeatRule === 'weekly' && reminder.customDays?.length) {
+                shouldCreate = reminder.customDays.includes(dayOfWeek);
+              } else if (reminder.repeatRule === 'custom' && reminder.customDays?.length) {
+                shouldCreate = reminder.customDays.includes(dayOfWeek);
+              }
               
-              try {
-                await CapacitorCalendar.createEvent({
-                  title: title,
-                  calendarId: calendarId,
-                  startDate: today.getTime(),
-                  endDate: endTime.getTime(),
-                  isAllDay: false,
-                  description: `${repeatText}${reminder.notes ? ' - ' + reminder.notes : ''}`,
-                  alerts: [-5]
-                });
-                addedCount++;
-              } catch (e) {}
+              if (!shouldCreate) continue;
+              
+              for (const time of times) {
+                const [hours, minutes] = time.split(':').map(Number);
+                const startTime = new Date(eventDate);
+                startTime.setHours(hours, minutes, 0, 0);
+                const endTime = new Date(startTime);
+                endTime.setMinutes(endTime.getMinutes() + 30);
+                
+                const title = `${reminder.name}`;
+                
+                try {
+                  await CapacitorCalendar.createEvent({
+                    title: title,
+                    calendarId: calendarId,
+                    startDate: startTime.getTime(),
+                    endDate: endTime.getTime(),
+                    isAllDay: false,
+                    description: reminder.notes || '',
+                    alerts: [-5]
+                  });
+                  addedCount++;
+                } catch (e) {}
+              }
             }
           }
         } else if (pageType === 'goal') {
