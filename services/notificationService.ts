@@ -205,5 +205,5 @@ const notificationIdFor = (accountId: string, daysBefore: number): number => {
     hash = ((hash << 5) - hash + hashInput.charCodeAt(index)) | 0;
   }
 
-  return Math.abs(hash) || 1;
+  return (hash & 0x7fffffff) || 1;
 };
