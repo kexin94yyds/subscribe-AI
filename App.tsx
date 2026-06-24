@@ -152,7 +152,10 @@ export default function App() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoaded, setIsLoaded] = useState(false); // 防止初始化时覆盖存储
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    const saved = localStorage.getItem('monoexpire_view_mode');
+    return saved === 'grid' || saved === 'list' ? saved : 'list';
+  });
   const [pageType, setPageType] = useState<PageType>(() => {
     // 从 localStorage 读取上次选择的页面类型
     const saved = localStorage.getItem('monoexpire_page_type');
@@ -495,6 +498,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('monoexpire_page_type', pageType);
   }, [pageType]);
+
+  useEffect(() => {
+    localStorage.setItem('monoexpire_view_mode', viewMode);
+  }, [viewMode]);
 
   const handleAddAccount = (data: Omit<Account, 'id'>) => {
     const newAccount: Account = {
