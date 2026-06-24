@@ -7,9 +7,10 @@ interface AccountCardProps {
   account: Account;
   onDelete: (id: string) => void;
   onEdit: (account: Account) => void;
+  compact?: boolean;
 }
 
-export const AccountCard: React.FC<AccountCardProps> = ({ account, onDelete, onEdit }) => {
+export const AccountCard: React.FC<AccountCardProps> = ({ account, onDelete, onEdit, compact = false }) => {
   const today = new Date();
   const expiry = parseISO(account.expirationDate);
   const daysLeft = differenceInDays(expiry, today);
@@ -33,6 +34,53 @@ export const AccountCard: React.FC<AccountCardProps> = ({ account, onDelete, onE
     status = ExpiryStatus.ExpiringSoon;
     statusColor = "border-black";
     icon = <Clock className="w-5 h-5" />;
+  }
+
+  if (compact) {
+    return (
+      <div className={`group flex min-h-[64px] items-center gap-3 border ${status === ExpiryStatus.Active ? 'border-gray-200' : 'border-black'} bg-white px-3 py-2 transition-colors hover:border-black`}>
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-black ${status === ExpiryStatus.Expired ? 'bg-black text-white' : 'bg-white text-black'}`}>
+          {React.cloneElement(icon, { className: 'w-4 h-4' })}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-baseline gap-2">
+            <h3 className="truncate text-sm font-bold">{account.name}</h3>
+            <span className="truncate text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+              {account.provider || 'Service'}
+            </span>
+          </div>
+          <div className="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-gray-500">
+            <span className={daysLeft < 0 ? 'font-semibold text-gray-400 line-through' : 'font-semibold text-black'}>
+              {Math.abs(daysLeft)}
+            </span>
+            <span>{daysLeft < 0 ? '天前已过期' : '天后到期'}</span>
+            <span className="text-gray-300">/</span>
+            <span className="truncate">{format(expiry, 'yyyy-MM-dd')}</span>
+            {refreshDaysLeft !== null && (
+              <span className="hidden text-blue-500 sm:inline">{refreshDaysLeft}天后刷新</span>
+            )}
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            onClick={() => onEdit(account)}
+            className="flex h-8 w-8 items-center justify-center border border-gray-200 text-gray-500 transition-colors hover:border-black hover:bg-black hover:text-white"
+            title="编辑"
+            aria-label={`编辑 ${account.name}`}
+          >
+            <Edit2 className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={() => onDelete(account.id)}
+            className="flex h-8 w-8 items-center justify-center border border-gray-200 text-gray-500 transition-colors hover:border-red-600 hover:bg-red-600 hover:text-white"
+            title="删除"
+            aria-label={`删除 ${account.name}`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
