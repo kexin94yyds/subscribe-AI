@@ -33,14 +33,14 @@ export const PageTypeSelector: React.FC<PageTypeSelectorProps> = ({ value, onCha
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-sm font-medium"
+        className="flex h-10 min-w-[76px] items-center justify-center gap-1.5 whitespace-nowrap rounded-sm border border-gray-200 bg-gray-50 px-3 text-sm font-semibold transition-colors hover:bg-white"
       >
         <span>{currentConfig.label}</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50 min-w-[140px]">
+        <div className="absolute right-0 top-full z-50 mt-2 min-w-[140px] overflow-hidden rounded-sm border border-gray-200 bg-white shadow-lg">
           {(Object.keys(PAGE_TYPE_CONFIG) as PageType[]).map((type) => {
             const config = PAGE_TYPE_CONFIG[type];
             const isSelected = type === value;
