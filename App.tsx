@@ -773,76 +773,102 @@ export default function App() {
   };
 
   const stats = getStats();
+  const toolbarGroupClass = "flex h-10 items-center overflow-hidden rounded-sm border border-gray-200 bg-gray-50";
+  const toolbarIconButtonClass = "inline-flex h-10 w-10 items-center justify-center text-gray-500 transition-colors hover:bg-white hover:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2";
+  const toolbarStandaloneButtonClass = `${toolbarIconButtonClass} rounded-sm border border-gray-200 bg-gray-50`;
+  const notificationButtonClass = `${toolbarStandaloneButtonClass} ${notificationPermission === 'granted' ? 'text-black' : 'text-gray-500'}`;
+  const renderNotificationButton = () => (
+    <button
+      onClick={handleEnableSubscriptionNotifications}
+      className={notificationButtonClass}
+      title={getNotificationButtonTitle()}
+      aria-label={getNotificationButtonTitle()}
+    >
+      {notificationPermission === 'granted' ? <BellRing className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+    </button>
+  );
 
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b-2 border-black pt-[env(safe-area-inset-top)]">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <div className="w-8 h-8 bg-black text-white flex items-center justify-center font-bold text-xl tracking-tighter rounded-sm">
                     M
                 </div>
-                <h1 className="text-2xl font-bold tracking-tight">MonoExpire</h1>
+                <h1 className="text-2xl font-bold tracking-tight truncate">MonoExpire</h1>
+              </div>
+              <div className="flex shrink-0 items-center gap-2 md:hidden">
+                {renderNotificationButton()}
+                <PageTypeSelector value={pageType} onChange={setPageType} />
+              </div>
             </div>
 
-            <div className="flex items-center gap-3 w-full md:w-auto">
-                <div className="relative flex-1 md:w-64">
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div className="relative w-full md:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input 
                         type="text"
                         placeholder={getSearchPlaceholder()}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 border border-gray-200 focus:border-black outline-none transition-colors bg-gray-50 focus:bg-white text-sm"
+                        className="h-10 w-full rounded-sm border border-gray-200 bg-gray-50 pl-9 pr-4 text-sm outline-none transition-colors focus:border-black focus:bg-white"
                     />
                 </div>
-                <div className="flex gap-1 border border-gray-200 p-1 rounded-sm bg-gray-50">
+                <div className="flex items-center gap-2 overflow-x-auto pb-0.5 md:overflow-visible md:pb-0">
+                <div className={toolbarGroupClass}>
                     <button 
                         onClick={() => setViewMode('grid')}
-                        className={`p-1.5 rounded-sm transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-black' : 'text-gray-400 hover:text-black'}`}
+                        className={`${toolbarIconButtonClass} ${viewMode === 'grid' ? 'bg-white text-black shadow-sm' : ''}`}
+                        title="网格视图"
+                        aria-label="网格视图"
                     >
                         <LayoutGrid className="w-4 h-4" />
                     </button>
                     <button 
                         onClick={() => setViewMode('list')}
-                        className={`p-1.5 rounded-sm transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-black' : 'text-gray-400 hover:text-black'}`}
+                        className={`${toolbarIconButtonClass} ${viewMode === 'list' ? 'bg-white text-black shadow-sm' : ''}`}
+                        title="列表视图"
+                        aria-label="列表视图"
                     >
                         <ListIcon className="w-4 h-4" />
                     </button>
                 </div>
-                <div className="flex gap-1 border border-gray-200 p-1 rounded-sm bg-gray-50">
+                <div className={toolbarGroupClass}>
                     <button 
                         onClick={handleExport}
-                        className="p-1.5 rounded-sm transition-all text-gray-400 hover:text-black hover:bg-white"
+                        className={toolbarIconButtonClass}
                         title="导出数据"
+                        aria-label="导出数据"
                     >
                         <Upload className="w-4 h-4" />
                     </button>
                     <button 
                         onClick={handleImport}
-                        className="p-1.5 rounded-sm transition-all text-gray-400 hover:text-black hover:bg-white"
+                        className={toolbarIconButtonClass}
                         title="导入数据"
+                        aria-label="导入数据"
                     >
                         <Download className="w-4 h-4" />
                     </button>
                 </div>
                 <button 
                     onClick={handleExportToCalendar}
-                    className="p-1.5 rounded-sm transition-all text-gray-400 hover:text-black hover:bg-white border border-gray-200 bg-gray-50"
+                    className={toolbarStandaloneButtonClass}
                     title="导出到日历"
+                    aria-label="导出到日历"
                 >
                     <Calendar className="w-4 h-4" />
                 </button>
-                <button
-                    onClick={handleEnableSubscriptionNotifications}
-                    className={`p-1.5 rounded-sm transition-all hover:text-black hover:bg-white border border-gray-200 bg-gray-50 ${notificationPermission === 'granted' ? 'text-black' : 'text-gray-400'}`}
-                    title={getNotificationButtonTitle()}
-                    aria-label={getNotificationButtonTitle()}
-                >
-                    {notificationPermission === 'granted' ? <BellRing className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
-                </button>
-                <PageTypeSelector value={pageType} onChange={setPageType} />
+                <div className="hidden md:block">
+                  {renderNotificationButton()}
+                </div>
+                <div className="hidden md:block">
+                  <PageTypeSelector value={pageType} onChange={setPageType} />
+                </div>
+                </div>
             </div>
         </div>
       </header>
