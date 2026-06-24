@@ -7,6 +7,7 @@ interface ReminderCardProps {
   onDelete: (id: string) => void;
   onEdit: (reminder: Reminder) => void;
   onToggleComplete?: (id: string) => void;
+  compact?: boolean;
 }
 
 const REPEAT_LABELS: Record<RepeatRule, string> = {
@@ -23,7 +24,8 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
   reminder, 
   onDelete, 
   onEdit,
-  onToggleComplete 
+  onToggleComplete,
+  compact = false
 }) => {
   const getRepeatText = () => {
     if (reminder.repeatRule === 'custom' && reminder.customDays?.length) {
@@ -39,6 +41,62 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
   };
 
   const completed = isCompletedToday();
+  const times = reminder.times || [reminder.time];
+
+  if (compact) {
+    return (
+      <div className={`group flex min-h-[64px] items-center gap-3 border bg-white px-3 py-2 transition-colors hover:border-black ${completed ? 'border-gray-200 opacity-60' : 'border-gray-200'}`}>
+        <button
+          onClick={() => onToggleComplete?.(reminder.id)}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-black ${completed ? 'bg-black text-white' : 'bg-white text-black'}`}
+          title={completed ? '取消完成' : '标记完成'}
+          aria-label={completed ? `取消完成 ${reminder.name}` : `标记完成 ${reminder.name}`}
+        >
+          {completed ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-baseline gap-2">
+            <h3 className={`truncate text-sm font-bold ${completed ? 'line-through text-gray-400' : ''}`}>
+              {reminder.name}
+            </h3>
+            <span className="truncate text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+              {getRepeatText()}
+            </span>
+          </div>
+          <div className="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-gray-500">
+            <span className={`font-mono font-semibold ${completed ? 'text-gray-400' : 'text-black'}`}>
+              {times.slice(0, 2).join(' / ')}
+            </span>
+            {times.length > 2 && <span>+{times.length - 2}</span>}
+            {reminder.notes && (
+              <>
+                <span className="text-gray-300">/</span>
+                <span className="truncate">{reminder.notes}</span>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            onClick={() => onEdit(reminder)}
+            className="flex h-8 w-8 items-center justify-center border border-gray-200 text-gray-500 transition-colors hover:border-black hover:bg-black hover:text-white"
+            title="编辑"
+            aria-label={`编辑 ${reminder.name}`}
+          >
+            <Edit2 className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={() => onDelete(reminder.id)}
+            className="flex h-8 w-8 items-center justify-center border border-gray-200 text-gray-500 transition-colors hover:border-red-600 hover:bg-red-600 hover:text-white"
+            title="删除"
+            aria-label={`删除 ${reminder.name}`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`group relative bg-white border-2 ${completed ? 'border-gray-200 opacity-60' : 'border-gray-200 hover:border-black'} p-3 md:p-5 transition-all duration-200 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}>
@@ -58,7 +116,6 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
 
       <div className="mb-2 md:mb-4">
         {(() => {
-          const times = reminder.times || [reminder.time];
           if (times.length === 1) {
             return (
               <span className={`text-2xl md:text-4xl font-bold font-mono tracking-tighter ${completed ? 'text-gray-400' : 'text-black'}`}>
