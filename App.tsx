@@ -953,13 +953,14 @@ export default function App() {
                 <Button variant="outline" onClick={() => setIsSmartAddOpen(true)}>尝试 AI 导入</Button>
             </div>
           ) : (
-            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-4"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-2"}>
                 {filteredAccounts.map(account => (
                     <AccountCard 
                         key={account.id} 
                         account={account} 
                         onDelete={handleDeleteAccount}
                         onEdit={handleEditClick}
+                        compact={viewMode === 'list'}
                     />
                 ))}
             </div>
@@ -973,7 +974,7 @@ export default function App() {
                 <Button variant="outline" onClick={() => setIsReminderModalOpen(true)}>添加提醒</Button>
             </div>
           ) : (
-            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-4"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-2"}>
                 {filteredReminders.map(reminder => (
                     <ReminderCard 
                         key={reminder.id} 
@@ -981,6 +982,7 @@ export default function App() {
                         onDelete={handleDeleteReminder}
                         onEdit={handleEditReminder}
                         onToggleComplete={handleToggleReminderComplete}
+                        compact={viewMode === 'list'}
                     />
                 ))}
             </div>
@@ -994,7 +996,7 @@ export default function App() {
                 <Button variant="outline" onClick={() => setIsGoalModalOpen(true)}>添加目标</Button>
             </div>
           ) : (
-            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-4"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-2"}>
                 {filteredGoals.map(goal => (
                     <GoalCard 
                         key={goal.id} 
@@ -1002,6 +1004,7 @@ export default function App() {
                         onDelete={handleDeleteGoal}
                         onEdit={handleEditGoal}
                         onToggleComplete={handleToggleGoalComplete}
+                        compact={viewMode === 'list'}
                     />
                 ))}
             </div>
