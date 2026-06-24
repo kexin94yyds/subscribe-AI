@@ -776,6 +776,7 @@ export default function App() {
   const toolbarGroupClass = "flex h-10 items-center overflow-hidden rounded-sm border border-gray-200 bg-gray-50";
   const toolbarIconButtonClass = "inline-flex h-10 w-10 items-center justify-center text-gray-500 transition-colors hover:bg-white hover:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2";
   const toolbarStandaloneButtonClass = `${toolbarIconButtonClass} rounded-sm border border-gray-200 bg-gray-50`;
+  const mobileToolButtonClass = "inline-flex h-10 items-center justify-center border-l border-gray-200 text-gray-500 transition-colors first:border-l-0 hover:bg-white hover:text-black focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black";
   const notificationButtonClass = `${toolbarStandaloneButtonClass} ${notificationPermission === 'granted' ? 'text-black' : 'text-gray-500'}`;
   const renderNotificationButton = () => (
     <button
@@ -817,7 +818,49 @@ export default function App() {
                         className="h-10 w-full rounded-sm border border-gray-200 bg-gray-50 pl-9 pr-4 text-sm outline-none transition-colors focus:border-black focus:bg-white"
                     />
                 </div>
-                <div className="flex items-center gap-2 overflow-x-auto pb-0.5 md:overflow-visible md:pb-0">
+                <div className="grid h-10 w-full grid-cols-5 overflow-hidden rounded-sm border border-gray-200 bg-gray-50 md:hidden">
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        className={`${mobileToolButtonClass} ${viewMode === 'grid' ? 'bg-white text-black shadow-sm' : ''}`}
+                        title="网格视图"
+                        aria-label="网格视图"
+                    >
+                        <LayoutGrid className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`${mobileToolButtonClass} ${viewMode === 'list' ? 'bg-white text-black shadow-sm' : ''}`}
+                        title="列表视图"
+                        aria-label="列表视图"
+                    >
+                        <ListIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={handleExport}
+                        className={mobileToolButtonClass}
+                        title="导出数据"
+                        aria-label="导出数据"
+                    >
+                        <Upload className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={handleImport}
+                        className={mobileToolButtonClass}
+                        title="导入数据"
+                        aria-label="导入数据"
+                    >
+                        <Download className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={handleExportToCalendar}
+                        className={mobileToolButtonClass}
+                        title="导出到日历"
+                        aria-label="导出到日历"
+                    >
+                        <Calendar className="w-4 h-4" />
+                    </button>
+                </div>
+                <div className="hidden items-center gap-2 md:flex">
                 <div className={toolbarGroupClass}>
                     <button 
                         onClick={() => setViewMode('grid')}
