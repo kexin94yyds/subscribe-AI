@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Command, LayoutGrid, List as ListIcon, Search, Download, Upload, Calendar } from 'lucide-react';
+import { Plus, Command, LayoutGrid, List as ListIcon, Search, Download, Upload, Calendar, Bell, BellRing } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
@@ -22,6 +22,12 @@ import {
   getStoredGoals,
   saveGoalsToStorage
 } from './services/storageService';
+import {
+  NotificationPermissionState,
+  checkSubscriptionNotificationPermission,
+  enableSubscriptionExpiryNotifications,
+  syncSubscriptionExpiryNotifications
+} from './services/notificationService';
 import { Account, Reminder, Goal, PageType, ParsedAccountData } from './types';
 
 // Simple modal for manual add/edit to keep App.tsx cleaner
@@ -160,6 +166,8 @@ export default function App() {
   const [editingReminder, setEditingReminder] = useState<Reminder | undefined>(undefined);
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermissionState>('unsupported');
+  const [notificationScheduledCount, setNotificationScheduledCount] = useState(0);
 
   // 导出到日历 (ICS格式) - 根据当前页面类型导出
   const handleExportToCalendar = async () => {
@@ -324,6 +332,26 @@ export default function App() {
     }
   };
 
+  const handleEnableSubscriptionNotifications = async () => {
+    try {
+      const result = await enableSubscriptionExpiryNotifications(accounts);
+      setNotificationPermission(result.permission);
+      setNotificationScheduledCount(result.scheduledCount);
+
+      if (result.permission === 'unsupported') {
+        alert('系统通知仅支持 iOS/Android App');
+      } else if (result.permission !== 'granted') {
+        alert('未获得通知权限，请在系统设置中允许 MonoExpire 发送通知');
+      } else if (result.scheduledCount > 0) {
+        alert(`已安排 ${result.scheduledCount} 条订阅到期系统通知`);
+      } else {
+        alert('当前没有未来到期的订阅可安排通知');
+      }
+    } catch (e: any) {
+      alert('设置系统通知失败: ' + (e.message || e));
+    }
+  };
+
   // 导出数据
   const handleExport = async () => {
     const data = JSON.stringify(accounts, null, 2);
@@ -419,12 +447,37 @@ export default function App() {
     loadAllData();
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadNotificationPermission = async () => {
+      const permission = await checkSubscriptionNotificationPermission();
+      if (isMounted) {
+        setNotificationPermission(permission);
+      }
+    };
+
+    loadNotificationPermission();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Save on change (只在加载完成后才保存)
   useEffect(() => {
     if (isLoaded) {
       saveAccountsToStorage(accounts);
     }
   }, [accounts, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded || notificationPermission !== 'granted') return;
+
+    syncSubscriptionExpiryNotifications(accounts)
+      .then(result => setNotificationScheduledCount(result.scheduledCount))
+      .catch(error => console.error('Failed to sync subscription notifications', error));
+  }, [accounts, isLoaded, notificationPermission]);
 
   useEffect(() => {
     if (isLoaded) {
@@ -653,6 +706,19 @@ export default function App() {
     }
   };
 
+  const getNotificationButtonTitle = () => {
+    if (notificationPermission === 'granted') {
+      return `已启用系统通知，当前计划 ${notificationScheduledCount} 条`;
+    }
+    if (notificationPermission === 'unsupported') {
+      return '系统通知仅支持 iOS/Android App';
+    }
+    if (notificationPermission === 'denied') {
+      return '通知权限已关闭';
+    }
+    return '启用订阅到期系统通知';
+  };
+
   const filteredAccounts = accounts.filter(acc => 
     acc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     acc.notes?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -767,6 +833,14 @@ export default function App() {
                     title="导出到日历"
                 >
                     <Calendar className="w-4 h-4" />
+                </button>
+                <button
+                    onClick={handleEnableSubscriptionNotifications}
+                    className={`p-1.5 rounded-sm transition-all hover:text-black hover:bg-white border border-gray-200 bg-gray-50 ${notificationPermission === 'granted' ? 'text-black' : 'text-gray-400'}`}
+                    title={getNotificationButtonTitle()}
+                    aria-label={getNotificationButtonTitle()}
+                >
+                    {notificationPermission === 'granted' ? <BellRing className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
                 </button>
                 <PageTypeSelector value={pageType} onChange={setPageType} />
             </div>
