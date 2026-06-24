@@ -113,7 +113,7 @@ const buildSubscriptionExpiryNotifications = (accounts: Account[]): LocalNotific
       const expiryDate = parseDateOnly(account.expirationDate);
       if (!expiryDate) return [];
 
-      return ALERT_DAYS_BEFORE.map(daysBefore => {
+      return ALERT_DAYS_BEFORE.map<LocalNotificationSchema | null>(daysBefore => {
         const triggerAt = new Date(expiryDate);
         triggerAt.setDate(triggerAt.getDate() - daysBefore);
         triggerAt.setHours(NOTIFICATION_HOUR, NOTIFICATION_MINUTE, 0, 0);
@@ -142,7 +142,7 @@ const buildSubscriptionExpiryNotifications = (accounts: Account[]): LocalNotific
             expirationDate: account.expirationDate,
             daysBefore
           }
-        } satisfies LocalNotificationSchema;
+        };
       }).filter((notification): notification is LocalNotificationSchema => notification !== null);
     })
     .sort((a, b) => {
