@@ -13,6 +13,7 @@ export interface Account {
   refreshCycleDays?: number; // 用量刷新周期（天），如30表示每月刷新
   nextRefreshDate?: string; // 下次刷新日期
   updatedAt?: string; // ISO string, used for cross-device sync packages
+  deletedAt?: string; // ISO string tombstone for cloud sync
 }
 
 // 重复规则
@@ -39,6 +40,7 @@ export interface Reminder {
   isCompleted?: boolean;
   lastCompletedDate?: string; // 上次完成日期
   updatedAt?: string; // ISO string, used for cross-device sync packages
+  deletedAt?: string; // ISO string tombstone for cloud sync
 }
 
 // 目标
@@ -51,6 +53,7 @@ export interface Goal {
   isCompleted?: boolean;
   completedDate?: string;
   updatedAt?: string; // ISO string, used for cross-device sync packages
+  deletedAt?: string; // ISO string tombstone for cloud sync
 }
 
 // 统一类型
