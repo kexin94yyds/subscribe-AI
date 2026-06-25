@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Command, LayoutGrid, List as ListIcon, Search, Download, Upload, Calendar, Bell, BellRing } from 'lucide-react';
+import { Plus, Command, LayoutGrid, List as ListIcon, Search, Download, Upload, Calendar, Bell, BellRing, RefreshCw } from 'lucide-react';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
@@ -13,6 +13,7 @@ import { SmartAddModal } from './components/SmartAddModal';
 import { ReminderModal } from './components/ReminderModal';
 import { GoalModal } from './components/GoalModal';
 import { PageTypeSelector } from './components/PageTypeSelector';
+import { SyncModal } from './components/SyncModal';
 import { 
   getStoredAccounts, 
   saveAccountsToStorage, 
@@ -28,6 +29,17 @@ import {
   enableSubscriptionExpiryNotifications,
   syncSubscriptionExpiryNotifications
 } from './services/notificationService';
+import {
+  countSyncData,
+  createMonoExpireBackup,
+  normalizeSyncData,
+  parseMonoExpireBackup,
+  sortAccounts,
+  sortGoals,
+  touchAccount,
+  touchGoal,
+  touchReminder
+} from './services/syncService';
 import { Account, Reminder, Goal, PageType, ParsedAccountData } from './types';
 
 // Simple modal for manual add/edit to keep App.tsx cleaner
@@ -165,6 +177,7 @@ export default function App() {
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined);
   const [editingReminder, setEditingReminder] = useState<Reminder | undefined>(undefined);
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
@@ -357,12 +370,13 @@ export default function App() {
 
   // 导出数据
   const handleExport = async () => {
-    const data = JSON.stringify(accounts, null, 2);
+    const backup = createMonoExpireBackup({ accounts, reminders, goals });
+    const data = JSON.stringify(backup, null, 2);
+    const fileName = `monoexpire-sync-${new Date().toISOString().split('T')[0]}.json`;
     
     if (Capacitor.isNativePlatform()) {
       // iOS/Android: 保存文件并分享
       try {
-        const fileName = `monoexpire-backup-${new Date().toISOString().split('T')[0]}.json`;
         const result = await Filesystem.writeFile({
           path: fileName,
           data: data,
@@ -370,9 +384,9 @@ export default function App() {
           encoding: Encoding.UTF8
         });
         await Share.share({
-          title: 'MonoExpire 数据备份',
+          title: 'MonoExpire 同步包',
           url: result.uri,
-          dialogTitle: '导出数据'
+          dialogTitle: '导出同步包'
         });
       } catch (e: any) {
         alert('导出失败: ' + (e.message || e));
@@ -383,7 +397,7 @@ export default function App() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `monoexpire-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = fileName;
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -400,18 +414,25 @@ export default function App() {
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
-          const imported = JSON.parse(event.target?.result as string);
-          if (Array.isArray(imported)) {
-            const merged = [...accounts];
-            imported.forEach((item: Account) => {
-              if (!merged.find(a => a.id === item.id)) {
-                merged.push(item);
-              }
-            });
-            const sorted = merged.sort((a, b) => new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
-            setAccounts(sorted);
-            alert(`成功导入 ${imported.length} 条记录`);
+          const imported = parseMonoExpireBackup(event.target?.result as string);
+          const counts = countSyncData(imported.data);
+          const confirmMessage = imported.legacyAccountsOnly
+            ? `旧版备份只包含订阅，将覆盖本机订阅数据并保留本机提醒和目标。\n\n订阅：${counts.accounts}\n\n继续导入吗？`
+            : `导入同步包会用文件内容覆盖本机数据。\n\n订阅：${counts.accounts}\n提醒：${counts.reminders}\n目标：${counts.goals}\n\n继续导入吗？`;
+
+          if (!window.confirm(confirmMessage)) {
+            return;
           }
+
+          setAccounts(sortAccounts(imported.data.accounts));
+
+          if (!imported.legacyAccountsOnly) {
+            setReminders(imported.data.reminders);
+            setGoals(sortGoals(imported.data.goals));
+          }
+
+          setIsSyncModalOpen(false);
+          alert(`同步完成：${counts.total} 条记录`);
         } catch {
           alert('导入失败：文件格式不正确');
         }
@@ -440,10 +461,15 @@ export default function App() {
       
       // 加载目标
       const storedGoals = await getStoredGoals();
-      const sortedGoals = storedGoals.sort((a, b) => 
-        new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
-      );
-      setGoals(sortedGoals);
+      const normalizedData = normalizeSyncData({
+        accounts: storedAccounts,
+        reminders: storedReminders,
+        goals: storedGoals,
+      });
+
+      setAccounts(normalizedData.accounts);
+      setReminders(normalizedData.reminders);
+      setGoals(normalizedData.goals);
       
       setIsLoaded(true);
     };
@@ -504,20 +530,22 @@ export default function App() {
   }, [viewMode]);
 
   const handleAddAccount = (data: Omit<Account, 'id'>) => {
-    const newAccount: Account = {
+    const newAccount = touchAccount({
       id: uuidv4(),
       ...data
-    };
+    });
     setAccounts(prev => {
         const updated = [...prev, newAccount];
-        return updated.sort((a, b) => new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
+        return sortAccounts(updated);
     });
     setIsManualModalOpen(false);
   };
 
   const handleUpdateAccount = (data: Omit<Account, 'id'>) => {
     if (!editingAccount) return;
-    setAccounts(prev => prev.map(acc => acc.id === editingAccount.id ? { ...data, id: editingAccount.id } : acc));
+    setAccounts(prev => sortAccounts(prev.map(acc => 
+      acc.id === editingAccount.id ? touchAccount({ ...data, id: editingAccount.id }) : acc
+    )));
     setEditingAccount(undefined);
     setIsManualModalOpen(false);
   };
@@ -565,11 +593,11 @@ export default function App() {
 
   // ========== 提醒处理 ==========
   const handleAddReminder = (data: Omit<Reminder, 'id' | 'type'>) => {
-    const newReminder: Reminder = {
+    const newReminder = touchReminder({
       id: uuidv4(),
       type: 'reminder',
       ...data
-    };
+    });
     setReminders(prev => [...prev, newReminder]);
     setIsReminderModalOpen(false);
   };
@@ -577,7 +605,7 @@ export default function App() {
   const handleUpdateReminder = (data: Omit<Reminder, 'id' | 'type'>) => {
     if (!editingReminder) return;
     setReminders(prev => prev.map(r => 
-      r.id === editingReminder.id ? { ...data, id: editingReminder.id, type: 'reminder' as const } : r
+      r.id === editingReminder.id ? touchReminder({ ...data, id: editingReminder.id, type: 'reminder' as const }) : r
     ));
     setEditingReminder(undefined);
     setIsReminderModalOpen(false);
@@ -601,7 +629,8 @@ export default function App() {
       const isCompletedToday = r.lastCompletedDate === today;
       return {
         ...r,
-        lastCompletedDate: isCompletedToday ? undefined : today
+        lastCompletedDate: isCompletedToday ? undefined : today,
+        updatedAt: new Date().toISOString()
       };
     }));
   };
@@ -622,23 +651,23 @@ export default function App() {
 
   // ========== 目标处理 ==========
   const handleAddGoal = (data: Omit<Goal, 'id' | 'type'>) => {
-    const newGoal: Goal = {
+    const newGoal = touchGoal({
       id: uuidv4(),
       type: 'goal',
       ...data
-    };
+    });
     setGoals(prev => {
       const updated = [...prev, newGoal];
-      return updated.sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+      return sortGoals(updated);
     });
     setIsGoalModalOpen(false);
   };
 
   const handleUpdateGoal = (data: Omit<Goal, 'id' | 'type'>) => {
     if (!editingGoal) return;
-    setGoals(prev => prev.map(g => 
-      g.id === editingGoal.id ? { ...data, id: editingGoal.id, type: 'goal' as const } : g
-    ));
+    setGoals(prev => sortGoals(prev.map(g => 
+      g.id === editingGoal.id ? touchGoal({ ...data, id: editingGoal.id, type: 'goal' as const }) : g
+    )));
     setEditingGoal(undefined);
     setIsGoalModalOpen(false);
   };
@@ -661,7 +690,8 @@ export default function App() {
       return {
         ...g,
         isCompleted: !g.isCompleted,
-        completedDate: !g.isCompleted ? today : undefined
+        completedDate: !g.isCompleted ? today : undefined,
+        updatedAt: new Date().toISOString()
       };
     }));
   };
@@ -780,6 +810,7 @@ export default function App() {
   };
 
   const stats = getStats();
+  const syncCounts = countSyncData({ accounts, reminders, goals });
   const toolbarGroupClass = "flex h-10 items-center overflow-hidden rounded-sm border border-gray-200 bg-gray-50";
   const toolbarIconButtonClass = "inline-flex h-10 w-10 items-center justify-center text-gray-500 transition-colors hover:bg-white hover:text-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2";
   const toolbarStandaloneButtonClass = `${toolbarIconButtonClass} rounded-sm border border-gray-200 bg-gray-50`;
@@ -795,12 +826,22 @@ export default function App() {
       {notificationPermission === 'granted' ? <BellRing className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
     </button>
   );
+  const renderSyncButton = (className = toolbarStandaloneButtonClass) => (
+    <button
+      onClick={() => setIsSyncModalOpen(true)}
+      className={className}
+      title="电脑同步"
+      aria-label="电脑同步"
+    >
+      <RefreshCw className="w-4 h-4" />
+    </button>
+  );
 
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b-2 border-black pt-[env(safe-area-inset-top)]">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col gap-3">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-8 h-8 bg-black text-white flex items-center justify-center font-bold text-xl tracking-tighter rounded-sm">
@@ -825,7 +866,7 @@ export default function App() {
                         className="h-10 w-full rounded-sm border border-gray-200 bg-gray-50 pl-9 pr-4 text-sm outline-none transition-colors focus:border-black focus:bg-white"
                     />
                 </div>
-                <div className="grid h-10 w-full grid-cols-5 overflow-hidden rounded-sm border border-gray-200 bg-gray-50 md:hidden">
+                <div className="grid h-10 w-full grid-cols-6 overflow-hidden rounded-sm border border-gray-200 bg-gray-50 md:hidden">
                     <button
                         onClick={() => setViewMode('grid')}
                         className={`${mobileToolButtonClass} ${viewMode === 'grid' ? 'bg-white text-black shadow-sm' : ''}`}
@@ -866,6 +907,7 @@ export default function App() {
                     >
                         <Calendar className="w-4 h-4" />
                     </button>
+                    {renderSyncButton(mobileToolButtonClass)}
                 </div>
                 <div className="hidden items-center gap-2 md:flex">
                 <div className={toolbarGroupClass}>
@@ -912,6 +954,7 @@ export default function App() {
                 >
                     <Calendar className="w-4 h-4" />
                 </button>
+                {renderSyncButton()}
                 <div className="hidden md:block">
                   {renderNotificationButton()}
                 </div>
@@ -924,7 +967,7 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8">
         
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -938,6 +981,10 @@ export default function App() {
                   AI 智能导入
               </Button>
             )}
+            <Button variant="outline" onClick={() => setIsSyncModalOpen(true)} className="flex-1 sm:flex-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-[4px] active:shadow-none">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                电脑同步
+            </Button>
         </div>
 
         {/* Stats Summary */}
@@ -960,7 +1007,7 @@ export default function App() {
                 <Button variant="outline" onClick={() => setIsSmartAddOpen(true)}>尝试 AI 导入</Button>
             </div>
           ) : (
-            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-2"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6" : "flex flex-col gap-2"}>
                 {filteredAccounts.map(account => (
                     <AccountCard 
                         key={account.id} 
@@ -981,7 +1028,7 @@ export default function App() {
                 <Button variant="outline" onClick={() => setIsReminderModalOpen(true)}>添加提醒</Button>
             </div>
           ) : (
-            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-2"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6" : "flex flex-col gap-2"}>
                 {filteredReminders.map(reminder => (
                     <ReminderCard 
                         key={reminder.id} 
@@ -1003,7 +1050,7 @@ export default function App() {
                 <Button variant="outline" onClick={() => setIsGoalModalOpen(true)}>添加目标</Button>
             </div>
           ) : (
-            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6" : "flex flex-col gap-2"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6" : "flex flex-col gap-2"}>
                 {filteredGoals.map(goal => (
                     <GoalCard 
                         key={goal.id} 
@@ -1050,6 +1097,15 @@ export default function App() {
         onClose={handleCloseGoal}
         onSave={handleSaveGoal}
         initialData={editingGoal}
+      />
+
+      <SyncModal
+        isOpen={isSyncModalOpen}
+        onClose={() => setIsSyncModalOpen(false)}
+        onExport={handleExport}
+        onImport={handleImport}
+        counts={syncCounts}
+        isNativePlatform={Capacitor.isNativePlatform()}
       />
     </div>
   );
