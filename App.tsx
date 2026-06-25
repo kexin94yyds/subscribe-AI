@@ -450,14 +450,9 @@ export default function App() {
       
       // 加载订阅
       const storedAccounts = await getStoredAccounts();
-      const sortedAccounts = storedAccounts.sort((a, b) => 
-        new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime()
-      );
-      setAccounts(sortedAccounts);
       
       // 加载提醒
       const storedReminders = await getStoredReminders();
-      setReminders(storedReminders);
       
       // 加载目标
       const storedGoals = await getStoredGoals();
