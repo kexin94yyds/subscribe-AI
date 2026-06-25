@@ -1263,8 +1263,14 @@ export default function App() {
         onClose={() => setIsSyncModalOpen(false)}
         onExport={handleExport}
         onImport={handleImport}
+        onSignIn={handleCloudSignIn}
+        onSignOut={handleCloudSignOut}
+        onSyncNow={() => runCloudSync()}
         counts={syncCounts}
         isNativePlatform={Capacitor.isNativePlatform()}
+        status={cloudSyncStatus}
+        statusMessage={cloudSyncMessage}
+        userEmail={cloudUserEmail}
       />
     </div>
   );
