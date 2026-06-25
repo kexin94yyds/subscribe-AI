@@ -9,7 +9,7 @@ export type CloudItemType = 'subscription' | 'reminder' | 'goal';
 interface CloudSyncRow {
   item_type: CloudItemType;
   item_id: string;
-  payload: Record<string, unknown>;
+  payload: unknown;
   updated_at: string;
   deleted_at: string | null;
   device_id: string | null;
@@ -239,4 +239,3 @@ export const markCloudItemDeleted = async (
 
   if (error) throw error;
 };
-
