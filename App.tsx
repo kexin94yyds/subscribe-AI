@@ -655,6 +655,18 @@ export default function App() {
     }
   }, [goals, isLoaded]);
 
+  useEffect(() => {
+    if (!isLoaded || !pendingCloudSync || !deviceId) return;
+    if (cloudSyncStatus === 'disabled' || cloudSyncStatus === 'signed_out' || cloudSyncStatus === 'syncing') return;
+
+    const timer = window.setTimeout(() => {
+      setPendingCloudSync(false);
+      runCloudSync(undefined, { silent: true });
+    }, 1200);
+
+    return () => window.clearTimeout(timer);
+  }, [accounts, reminders, goals, isLoaded, pendingCloudSync, deviceId, cloudSyncStatus]);
+
   // 保存页面类型到 localStorage
   useEffect(() => {
     localStorage.setItem('monoexpire_page_type', pageType);
