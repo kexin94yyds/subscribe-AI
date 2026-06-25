@@ -385,6 +385,100 @@ export default function App() {
     }
   };
 
+  const applySyncedData = (data: MonoExpireData) => {
+    setAccounts(sortAccounts(data.accounts));
+    setReminders(data.reminders);
+    setGoals(sortGoals(data.goals));
+  };
+
+  const getLocalSyncData = (): MonoExpireData => ({
+    accounts,
+    reminders,
+    goals,
+  });
+
+  const getSyncErrorMessage = (error: unknown) => {
+    return error instanceof Error ? error.message : '同步失败';
+  };
+
+  const runCloudSync = async (dataOverride?: MonoExpireData, options: { silent?: boolean } = {}) => {
+    if (!isSupabaseConfigured()) {
+      setCloudSyncStatus('disabled');
+      setCloudSyncMessage('缺少 Supabase 环境变量');
+      return;
+    }
+
+    const activeDeviceId = deviceId || await getOrCreateDeviceId();
+    if (!deviceId) {
+      setDeviceId(activeDeviceId);
+    }
+
+    try {
+      if (!options.silent) {
+        setCloudSyncStatus('syncing');
+        setCloudSyncMessage('正在同步...');
+      }
+
+      const result = await syncMonoExpireData(dataOverride || getLocalSyncData(), activeDeviceId);
+      applySyncedData(result.data);
+      setCloudSyncStatus('synced');
+      setCloudSyncMessage(`已同步：上传 ${result.uploadedCount}，拉取 ${result.downloadedCount}`);
+    } catch (error) {
+      const message = getSyncErrorMessage(error);
+      if (message.includes('Not signed in')) {
+        setCloudSyncStatus('signed_out');
+        setCloudSyncMessage('登录后自动同步手机和电脑数据');
+        setCloudUserEmail('');
+      } else {
+        setCloudSyncStatus('error');
+        setCloudSyncMessage(message);
+      }
+    }
+  };
+
+  const queueCloudSync = () => {
+    if (cloudSyncStatus === 'disabled' || cloudSyncStatus === 'signed_out') return;
+    setPendingCloudSync(true);
+  };
+
+  const handleCloudSignIn = async (email: string) => {
+    try {
+      setCloudSyncStatus('syncing');
+      setCloudSyncMessage('正在发送登录邮件...');
+      await signInToCloud(email);
+      setCloudSyncStatus('signed_out');
+      setCloudSyncMessage('登录邮件已发送，请打开邮件完成登录');
+    } catch (error) {
+      setCloudSyncStatus('error');
+      setCloudSyncMessage(getSyncErrorMessage(error));
+    }
+  };
+
+  const handleCloudSignOut = async () => {
+    try {
+      await signOutFromCloud();
+      setCloudUserEmail('');
+      setCloudSyncStatus('signed_out');
+      setCloudSyncMessage('已退出云同步');
+    } catch (error) {
+      setCloudSyncStatus('error');
+      setCloudSyncMessage(getSyncErrorMessage(error));
+    }
+  };
+
+  const handleCloudItemDeleted = async (itemType: CloudItemType, itemId: string) => {
+    if (cloudSyncStatus === 'disabled' || cloudSyncStatus === 'signed_out') return;
+
+    try {
+      const activeDeviceId = deviceId || await getOrCreateDeviceId();
+      await markCloudItemDeleted(itemType, itemId, activeDeviceId);
+      setPendingCloudSync(true);
+    } catch (error) {
+      setCloudSyncStatus('error');
+      setCloudSyncMessage(getSyncErrorMessage(error));
+    }
+  };
+
   // 导出数据
   const handleExport = async () => {
     const backup = createMonoExpireBackup({ accounts, reminders, goals });
