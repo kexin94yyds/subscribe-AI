@@ -542,6 +542,7 @@ export default function App() {
             setGoals(sortGoals(imported.data.goals));
           }
 
+          queueCloudSync();
           setIsSyncModalOpen(false);
           alert(`同步完成：${counts.total} 条记录`);
         } catch {
@@ -685,6 +686,7 @@ export default function App() {
         const updated = [...prev, newAccount];
         return sortAccounts(updated);
     });
+    queueCloudSync();
     setIsManualModalOpen(false);
   };
 
@@ -693,6 +695,7 @@ export default function App() {
     setAccounts(prev => sortAccounts(prev.map(acc => 
       acc.id === editingAccount.id ? touchAccount({ ...data, id: editingAccount.id }) : acc
     )));
+    queueCloudSync();
     setEditingAccount(undefined);
     setIsManualModalOpen(false);
   };
@@ -700,6 +703,7 @@ export default function App() {
   const handleDeleteAccount = (id: string) => {
     if (window.confirm('确定要删除这个记录吗？')) {
       setAccounts(prev => prev.filter(acc => acc.id !== id));
+      void handleCloudItemDeleted('subscription', id);
     }
   };
 
@@ -746,6 +750,7 @@ export default function App() {
       ...data
     });
     setReminders(prev => [...prev, newReminder]);
+    queueCloudSync();
     setIsReminderModalOpen(false);
   };
 
@@ -754,6 +759,7 @@ export default function App() {
     setReminders(prev => prev.map(r => 
       r.id === editingReminder.id ? touchReminder({ ...data, id: editingReminder.id, type: 'reminder' as const }) : r
     ));
+    queueCloudSync();
     setEditingReminder(undefined);
     setIsReminderModalOpen(false);
   };
@@ -761,6 +767,7 @@ export default function App() {
   const handleDeleteReminder = (id: string) => {
     if (window.confirm('确定要删除这个提醒吗？')) {
       setReminders(prev => prev.filter(r => r.id !== id));
+      void handleCloudItemDeleted('reminder', id);
     }
   };
 
@@ -780,6 +787,7 @@ export default function App() {
         updatedAt: new Date().toISOString()
       };
     }));
+    queueCloudSync();
   };
 
   const handleSaveReminder = (data: Omit<Reminder, 'id' | 'type'>) => {
@@ -807,6 +815,7 @@ export default function App() {
       const updated = [...prev, newGoal];
       return sortGoals(updated);
     });
+    queueCloudSync();
     setIsGoalModalOpen(false);
   };
 
@@ -815,6 +824,7 @@ export default function App() {
     setGoals(prev => sortGoals(prev.map(g => 
       g.id === editingGoal.id ? touchGoal({ ...data, id: editingGoal.id, type: 'goal' as const }) : g
     )));
+    queueCloudSync();
     setEditingGoal(undefined);
     setIsGoalModalOpen(false);
   };
@@ -822,6 +832,7 @@ export default function App() {
   const handleDeleteGoal = (id: string) => {
     if (window.confirm('确定要删除这个目标吗？')) {
       setGoals(prev => prev.filter(g => g.id !== id));
+      void handleCloudItemDeleted('goal', id);
     }
   };
 
@@ -841,6 +852,7 @@ export default function App() {
         updatedAt: new Date().toISOString()
       };
     }));
+    queueCloudSync();
   };
 
   const handleSaveGoal = (data: Omit<Goal, 'id' | 'type'>) => {
