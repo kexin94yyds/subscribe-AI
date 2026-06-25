@@ -21,7 +21,8 @@ import {
   getStoredReminders,
   saveRemindersToStorage,
   getStoredGoals,
-  saveGoalsToStorage
+  saveGoalsToStorage,
+  getOrCreateDeviceId
 } from './services/storageService';
 import {
   NotificationPermissionState,
@@ -38,8 +39,19 @@ import {
   sortGoals,
   touchAccount,
   touchGoal,
-  touchReminder
+  touchReminder,
+  MonoExpireData
 } from './services/syncService';
+import {
+  CloudItemType,
+  CloudSyncStatus,
+  getCloudSession,
+  markCloudItemDeleted,
+  signInToCloud,
+  signOutFromCloud,
+  syncMonoExpireData
+} from './services/cloudSyncService';
+import { isSupabaseConfigured } from './services/supabaseClient';
 import { Account, Reminder, Goal, PageType, ParsedAccountData } from './types';
 
 // Simple modal for manual add/edit to keep App.tsx cleaner
@@ -184,6 +196,11 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermissionState>('unsupported');
   const [notificationScheduledCount, setNotificationScheduledCount] = useState(0);
+  const [deviceId, setDeviceId] = useState('');
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<CloudSyncStatus>('disabled');
+  const [cloudSyncMessage, setCloudSyncMessage] = useState('未配置 Supabase');
+  const [cloudUserEmail, setCloudUserEmail] = useState('');
+  const [pendingCloudSync, setPendingCloudSync] = useState(false);
 
   // 导出到日历 (ICS格式) - 根据当前页面类型导出
   const handleExportToCalendar = async () => {
