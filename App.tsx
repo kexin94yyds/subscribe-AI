@@ -556,6 +556,9 @@ export default function App() {
   // Initial Load
   useEffect(() => {
     const loadAllData = async () => {
+      const activeDeviceId = await getOrCreateDeviceId();
+      setDeviceId(activeDeviceId);
+
       // 先迁移旧数据
       await migrateFromLocalStorage();
       
@@ -573,9 +576,35 @@ export default function App() {
         goals: storedGoals,
       });
 
-      setAccounts(normalizedData.accounts);
-      setReminders(normalizedData.reminders);
-      setGoals(normalizedData.goals);
+      let dataToApply = normalizedData;
+
+      if (!isSupabaseConfigured()) {
+        setCloudSyncStatus('disabled');
+        setCloudSyncMessage('缺少 Supabase 环境变量');
+      } else {
+        try {
+          const session = await getCloudSession();
+          if (!session?.user) {
+            setCloudSyncStatus('signed_out');
+            setCloudSyncMessage('登录后自动同步手机和电脑数据');
+          } else {
+            setCloudUserEmail(session.user.email || '已登录');
+            setCloudSyncStatus('syncing');
+            setCloudSyncMessage('正在同步...');
+            const result = await syncMonoExpireData(normalizedData, activeDeviceId);
+            dataToApply = result.data;
+            setCloudSyncStatus('synced');
+            setCloudSyncMessage(`已同步：上传 ${result.uploadedCount}，拉取 ${result.downloadedCount}`);
+          }
+        } catch (error) {
+          setCloudSyncStatus('error');
+          setCloudSyncMessage(getSyncErrorMessage(error));
+        }
+      }
+
+      setAccounts(dataToApply.accounts);
+      setReminders(dataToApply.reminders);
+      setGoals(dataToApply.goals);
       
       setIsLoaded(true);
     };
