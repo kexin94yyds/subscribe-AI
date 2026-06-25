@@ -1,10 +1,12 @@
 import { Account, Reminder, Goal } from '../types';
 import { Preferences } from '@capacitor/preferences';
 import { Capacitor } from '@capacitor/core';
+import { v4 as uuidv4 } from 'uuid';
 
 const STORAGE_KEY = 'monoexpire_accounts';
 const REMINDERS_KEY = 'monoexpire_reminders';
 const GOALS_KEY = 'monoexpire_goals';
+const DEVICE_ID_KEY = 'monoexpire_device_id';
 
 export const getStoredAccounts = async (): Promise<Account[]> => {
   try {
@@ -113,5 +115,28 @@ export const saveGoalsToStorage = async (goals: Goal[]): Promise<void> => {
     }
   } catch (error) {
     console.error("Failed to save goals to storage", error);
+  }
+};
+
+export const getOrCreateDeviceId = async (): Promise<string> => {
+  try {
+    if (Capacitor.isNativePlatform()) {
+      const { value } = await Preferences.get({ key: DEVICE_ID_KEY });
+      if (value) return value;
+
+      const deviceId = uuidv4();
+      await Preferences.set({ key: DEVICE_ID_KEY, value: deviceId });
+      return deviceId;
+    }
+
+    const stored = localStorage.getItem(DEVICE_ID_KEY);
+    if (stored) return stored;
+
+    const deviceId = uuidv4();
+    localStorage.setItem(DEVICE_ID_KEY, deviceId);
+    return deviceId;
+  } catch (error) {
+    console.error("Failed to get device id", error);
+    return uuidv4();
   }
 };
