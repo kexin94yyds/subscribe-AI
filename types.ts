@@ -12,6 +12,7 @@ export interface Account {
   category?: 'ai' | 'tool' | 'subscription' | 'other';
   refreshCycleDays?: number; // 用量刷新周期（天），如30表示每月刷新
   nextRefreshDate?: string; // 下次刷新日期
+  updatedAt?: string; // ISO string, used for cross-device sync packages
 }
 
 // 重复规则
@@ -37,6 +38,7 @@ export interface Reminder {
   notes?: string;
   isCompleted?: boolean;
   lastCompletedDate?: string; // 上次完成日期
+  updatedAt?: string; // ISO string, used for cross-device sync packages
 }
 
 // 目标
@@ -48,6 +50,7 @@ export interface Goal {
   notes?: string;
   isCompleted?: boolean;
   completedDate?: string;
+  updatedAt?: string; // ISO string, used for cross-device sync packages
 }
 
 // 统一类型
