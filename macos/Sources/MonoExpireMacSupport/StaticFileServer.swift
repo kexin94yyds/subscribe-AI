@@ -86,8 +86,8 @@ public final class StaticFileServer {
         if requestedPort == 0 {
             newListener = try NWListener(using: parameters)
         } else if let port = NWEndpoint.Port(rawValue: requestedPort) {
-            parameters.requiredLocalEndpoint = .hostPort(host: .name("localhost", nil), port: port)
-            newListener = try NWListener(using: parameters, on: port)
+            parameters.requiredLocalEndpoint = .hostPort(host: .ipv4(IPv4Address("127.0.0.1")!), port: port)
+            newListener = try NWListener(using: parameters)
         } else {
             throw StaticFileServerError.invalidPort(requestedPort)
         }
