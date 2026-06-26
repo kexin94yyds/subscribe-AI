@@ -71,6 +71,12 @@ stage_app_bundle() {
   <string>$MIN_SYSTEM_VERSION</string>
   <key>NSPrincipalClass</key>
   <string>NSApplication</string>
+  <key>NSCalendarsUsageDescription</key>
+  <string>MonoExpire needs calendar access to add expiry, reminder, and goal events.</string>
+  <key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+  <string>MonoExpire needs calendar access to add expiry, reminder, and goal events.</string>
+  <key>NSCalendarsFullAccessUsageDescription</key>
+  <string>MonoExpire needs calendar access to add expiry, reminder, and goal events.</string>
 </dict>
 </plist>
 PLIST
@@ -131,4 +137,3 @@ case "$MODE" in
     exit 2
     ;;
 esac
-

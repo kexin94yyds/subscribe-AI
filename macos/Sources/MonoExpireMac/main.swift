@@ -20,6 +20,7 @@ private enum MonoExpireMacError: Error, LocalizedError {
 private final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow?
     private var staticServer: StaticFileServer?
+    private var calendarBridge: CalendarBridge?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
@@ -78,9 +79,13 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     private func showMainWindow(url: URL) {
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        let calendarBridge = CalendarBridge()
+        configuration.userContentController.addUserScript(CalendarBridge.userScript)
+        configuration.userContentController.add(calendarBridge, name: CalendarBridge.messageHandlerName)
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.allowsBackForwardNavigationGestures = true
+        calendarBridge.webView = webView
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 1180, height: 820),
@@ -94,6 +99,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         window.makeKeyAndOrderFront(nil)
 
         self.window = window
+        self.calendarBridge = calendarBridge
         NSApp.activate(ignoringOtherApps: true)
 
         webView.load(URLRequest(url: url))

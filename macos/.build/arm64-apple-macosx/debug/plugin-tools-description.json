@@ -28,6 +28,10 @@
       "inputs" : [
         {
           "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/CalendarBridge.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/main.swift"
         },
         {
@@ -47,6 +51,7 @@
       "moduleName" : "MonoExpireMac",
       "moduleOutputPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMac.swiftmodule",
       "objects" : [
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/CalendarBridge.swift.o",
         "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.swift.o"
       ],
       "otherArguments" : [
@@ -70,7 +75,6 @@
         "-entry-point-function-name",
         "-Xfrontend",
         "MonoExpireMac_main",
-        "-parse-as-library",
         "-swift-version",
         "5",
         "-plugin-path",
@@ -103,6 +107,10 @@
       "outputs" : [
         {
           "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/CalendarBridge.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.swift.o"
         },
         {
@@ -112,6 +120,7 @@
       ],
       "prepareForIndexing" : false,
       "sources" : [
+        "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/CalendarBridge.swift",
         "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/main.swift"
       ],
       "tempsPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build",
@@ -429,6 +438,7 @@
       "-package-name",
       "macos",
       "-c",
+      "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/CalendarBridge.swift",
       "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/main.swift",
       "-I",
       "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules",
@@ -452,7 +462,6 @@
       "-entry-point-function-name",
       "-Xfrontend",
       "MonoExpireMac_main",
-      "-parse-as-library",
       "-swift-version",
       "5",
       "-plugin-path",
@@ -725,6 +734,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/CalendarBridge.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.swift.o"
         },
         {
@@ -744,6 +757,10 @@
         {
           "kind" : "virtual",
           "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/CalendarBridge.swift"
         },
         {
           "kind" : "file",

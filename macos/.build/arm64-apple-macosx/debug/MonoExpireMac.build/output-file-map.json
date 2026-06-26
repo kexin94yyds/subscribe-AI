@@ -2,6 +2,13 @@
   "": {
     "swift-dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/primary.swiftdeps"
   },
+  "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/CalendarBridge.swift": {
+    "dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/CalendarBridge.d",
+    "object": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/CalendarBridge.swift.o",
+    "swiftmodule": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/CalendarBridge~partial.swiftmodule",
+    "swift-dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/CalendarBridge.swiftdeps",
+    "diagnostics": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/CalendarBridge.dia"
+  },
   "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/main.swift": {
     "dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.d",
     "object": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.swift.o",
