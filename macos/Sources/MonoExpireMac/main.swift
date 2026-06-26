@@ -127,14 +127,8 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-@main
-private enum MonoExpireMac {
-    @MainActor
-    static func main() {
-        let app = NSApplication.shared
-        let delegate = AppDelegate()
-        app.delegate = delegate
-        app.run()
-        _ = delegate
-    }
-}
+let app = NSApplication.shared
+let delegate = AppDelegate()
+app.delegate = delegate
+app.run()
+_ = delegate

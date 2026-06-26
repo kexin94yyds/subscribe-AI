@@ -118,7 +118,7 @@ final class CalendarBridge: NSObject, WKScriptMessageHandler {
 
     private func requestCalendarAccess() async throws {
         if #available(macOS 14.0, *) {
-            let granted = try await withCheckedThrowingContinuation { continuation in
+            let granted: Bool = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Bool, Error>) in
                 eventStore.requestFullAccessToEvents { granted, error in
                     if let error {
                         continuation.resume(throwing: error)
@@ -134,7 +134,7 @@ final class CalendarBridge: NSObject, WKScriptMessageHandler {
             return
         }
 
-        let granted = try await withCheckedThrowingContinuation { continuation in
+        let granted: Bool = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Bool, Error>) in
             eventStore.requestAccess(to: .event) { granted, error in
                 if let error {
                     continuation.resume(throwing: error)
@@ -159,7 +159,10 @@ final class CalendarBridge: NSObject, WKScriptMessageHandler {
 
     private func resolve(requestID: String, result: [String: Int]) {
         guard let json = jsonString(result) else {
-            reject(requestID: requestID, message: CalendarBridgeError.invalidResponse.errorDescription)
+            reject(
+                requestID: requestID,
+                message: CalendarBridgeError.invalidResponse.errorDescription ?? "Could not serialize the calendar export response."
+            )
             return
         }
 
