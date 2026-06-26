@@ -54,8 +54,6 @@ const dateValue = (value?: string | null): number => {
 
 const keyFor = (type: CloudItemType, id: string) => `${type}:${id}`;
 
-const appwriteRowIdPattern = /^[A-Za-z0-9][A-Za-z0-9._-]{0,35}$/;
-
 const hashKey = (value: string): string => {
   let hash = 0x811c9dc5;
 
@@ -64,13 +62,14 @@ const hashKey = (value: string): string => {
     hash = Math.imul(hash, 0x01000193);
   }
 
-  return (hash >>> 0).toString(36);
+  return (hash >>> 0).toString(36).padStart(7, '0');
 };
 
 const rowIdFor = (type: CloudItemType, id: string): string => {
-  if (appwriteRowIdPattern.test(id)) return id;
+  const key = keyFor(type, id);
+  const reversedKey = [...key].reverse().join('');
 
-  return `${type}-${hashKey(keyFor(type, id))}`;
+  return `m_${hashKey(key)}_${hashKey(reversedKey)}`;
 };
 
 const itemUpdatedAt = (item: Account | Reminder | Goal): string => {
@@ -368,13 +367,13 @@ export const markCloudItemDeleted = async (
 
   const userId = await getAuthenticatedUserId();
   const row: UpsertCloudSyncRow = {
-      user_id: userId,
-      item_type: itemType,
-      item_id: itemId,
-      payload: {},
-      updated_at: deletedAt,
-      deleted_at: deletedAt,
-      device_id: deviceId,
+    user_id: userId,
+    item_type: itemType,
+    item_id: itemId,
+    payload: {},
+    updated_at: deletedAt,
+    deleted_at: deletedAt,
+    device_id: deviceId,
   };
 
   await appwriteTables.upsertRow<AppwriteCloudSyncRow>({

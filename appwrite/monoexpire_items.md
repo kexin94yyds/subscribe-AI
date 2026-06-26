@@ -23,6 +23,8 @@ Enable Email Magic URL auth in Appwrite Auth. Add each app URL as an allowed pla
 
 Create one table named `monoexpire_items`.
 
+Rows use a deterministic Appwrite row ID derived from `item_type:item_id`, so the same local item updates the same cloud row across devices.
+
 Columns:
 
 | Column | Type | Required | Notes |
