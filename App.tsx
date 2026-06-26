@@ -53,7 +53,80 @@ import {
   verifyCloudEmailOtp
 } from './services/cloudSyncService';
 import { isAppwriteConfigured } from './services/appwriteClient';
+import {
+  CalendarExportEvent,
+  buildCalendarExportEvents,
+  calendarExportTypeLabel
+} from './services/calendarExportService';
 import { Account, Reminder, Goal, PageType, ParsedAccountData } from './types';
+
+declare global {
+  interface Window {
+    monoExpireMacCalendar?: {
+      exportEvents: (events: CalendarExportEvent[]) => Promise<{ addedCount: number; skippedCount: number }>;
+    };
+  }
+}
+
+const showCalendarExportResult = (typeLabel: string, addedCount: number, skippedCount: number) => {
+  if (skippedCount > 0) {
+    alert(`已添加 ${addedCount} 个${typeLabel}事件，跳过 ${skippedCount} 个已存在的事件`);
+  } else if (addedCount > 0) {
+    alert(`已添加 ${addedCount} 个${typeLabel}事件`);
+  } else {
+    alert(`没有${typeLabel}需要导出`);
+  }
+};
+
+const exportEventsWithCapacitorCalendar = async (events: CalendarExportEvent[]) => {
+  await CapacitorCalendar.requestFullCalendarAccess();
+
+  const selectedCalendars = await CapacitorCalendar.selectCalendarsWithPrompt({
+    displayStyle: 0
+  });
+
+  if (!selectedCalendars.result?.length) {
+    return null;
+  }
+
+  const calendarId = selectedCalendars.result[0].id;
+  let addedCount = 0;
+  let skippedCount = 0;
+
+  for (const event of events) {
+    try {
+      if (event.dedupe) {
+        const existingEvents = await CapacitorCalendar.listEventsInRange({
+          from: event.startDate,
+          to: event.endDate
+        });
+
+        const isDuplicate = existingEvents.result?.some(
+          (existingEvent: any) => existingEvent.title === event.title
+        );
+
+        if (isDuplicate) {
+          skippedCount++;
+          continue;
+        }
+      }
+
+      await CapacitorCalendar.createEvent({
+        title: event.title,
+        calendarId,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        isAllDay: event.isAllDay,
+        description: event.description,
+        alerts: event.alerts
+      });
+      addedCount++;
+    } catch (e) {}
+  }
+
+  await CapacitorCalendar.openCalendar({ date: Date.now() });
+  return { addedCount, skippedCount };
+};
 
 // Simple modal for manual add/edit to keep App.tsx cleaner
 const ManualModal = ({ 
