@@ -1,15 +1,17 @@
-import { Account as AppwriteAccount, AppwriteException, Client, TablesDB } from 'appwrite';
+import { Account as AppwriteAccount, AppwriteException, Client, Storage, TablesDB } from 'appwrite';
 
 const appwriteEndpoint = import.meta.env.VITE_APPWRITE_ENDPOINT;
 const appwriteProjectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
 const appwriteDatabaseId = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const appwriteTableId = import.meta.env.VITE_APPWRITE_TABLE_ID;
+const appwriteCalendarFeedBucketId = import.meta.env.VITE_APPWRITE_CALENDAR_FEED_BUCKET_ID;
 
 export const appwriteConfig = {
   endpoint: appwriteEndpoint,
   projectId: appwriteProjectId,
   databaseId: appwriteDatabaseId,
   tableId: appwriteTableId,
+  calendarFeedBucketId: appwriteCalendarFeedBucketId,
 };
 
 export const isAppwriteConfigured = (): boolean => Boolean(
@@ -27,6 +29,7 @@ const appwriteClient = isAppwriteConfigured()
 
 export const appwriteAccount = appwriteClient ? new AppwriteAccount(appwriteClient) : null;
 export const appwriteTables = appwriteClient ? new TablesDB(appwriteClient) : null;
+export const appwriteStorage = appwriteClient ? new Storage(appwriteClient) : null;
 
 export const isAppwriteAuthError = (error: unknown): boolean => {
   if (error instanceof AppwriteException) {

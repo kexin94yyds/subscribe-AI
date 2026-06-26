@@ -46,3 +46,19 @@ Indexes:
 
 - Optional: add a key index on `item_type`.
 - Optional: add a key index on `item_id`.
+
+## Calendar Feed Storage
+
+Optional env:
+
+```env
+VITE_APPWRITE_CALENDAR_FEED_BUCKET_ID=<BUCKET_ID>
+```
+
+Create one Storage bucket for generated `.ics` feeds. Calendar feed files must allow anonymous read access because Apple Calendar, Google Calendar, and other subscribers cannot send Appwrite user sessions.
+
+Security model:
+
+- File IDs are generated from a per-user random token stored in Appwrite account preferences.
+- The feed URL is private-by-token, not private-by-auth.
+- Rotating the feed deletes the old file and creates a new token/file URL.
