@@ -55,5 +55,18 @@ final class StaticFileResponderTests: XCTestCase {
         XCTAssertEqual(response.reasonPhrase, "Forbidden")
         XCTAssertFalse(String(data: response.body, encoding: .utf8)?.contains("outside") ?? true)
     }
-}
 
+    func testStaticFileServerRespondsOverHTTP() async throws {
+        let server = try StaticFileServer(webRoot: webRoot, port: 0)
+        try await server.start()
+        defer { server.stop() }
+
+        let url = server.baseURL.appendingPathComponent("assets/app.js")
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        let httpResponse = try XCTUnwrap(response as? HTTPURLResponse)
+        XCTAssertEqual(httpResponse.statusCode, 200)
+        XCTAssertEqual(httpResponse.value(forHTTPHeaderField: "Content-Type"), "text/javascript; charset=utf-8")
+        XCTAssertEqual(String(data: data, encoding: .utf8), "console.log('ok');")
+    }
+}
