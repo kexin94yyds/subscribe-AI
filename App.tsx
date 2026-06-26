@@ -51,7 +51,7 @@ import {
   signOutFromCloud,
   syncMonoExpireData
 } from './services/cloudSyncService';
-import { isSupabaseConfigured } from './services/supabaseClient';
+import { isAppwriteConfigured } from './services/appwriteClient';
 import { Account, Reminder, Goal, PageType, ParsedAccountData } from './types';
 
 // Simple modal for manual add/edit to keep App.tsx cleaner
@@ -198,7 +198,7 @@ export default function App() {
   const [notificationScheduledCount, setNotificationScheduledCount] = useState(0);
   const [deviceId, setDeviceId] = useState('');
   const [cloudSyncStatus, setCloudSyncStatus] = useState<CloudSyncStatus>('disabled');
-  const [cloudSyncMessage, setCloudSyncMessage] = useState('未配置 Supabase');
+  const [cloudSyncMessage, setCloudSyncMessage] = useState('未配置 Appwrite');
   const [cloudUserEmail, setCloudUserEmail] = useState('');
   const [pendingCloudSync, setPendingCloudSync] = useState(false);
 
@@ -402,9 +402,9 @@ export default function App() {
   };
 
   const runCloudSync = async (dataOverride?: MonoExpireData, options: { silent?: boolean } = {}) => {
-    if (!isSupabaseConfigured()) {
+    if (!isAppwriteConfigured()) {
       setCloudSyncStatus('disabled');
-      setCloudSyncMessage('缺少 Supabase 环境变量');
+      setCloudSyncMessage('缺少 Appwrite 环境变量');
       return;
     }
 
@@ -579,9 +579,9 @@ export default function App() {
 
       let dataToApply = normalizedData;
 
-      if (!isSupabaseConfigured()) {
+      if (!isAppwriteConfigured()) {
         setCloudSyncStatus('disabled');
-        setCloudSyncMessage('缺少 Supabase 环境变量');
+        setCloudSyncMessage('缺少 Appwrite 环境变量');
       } else {
         try {
           const session = await getCloudSession();

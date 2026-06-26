@@ -1,7 +1,12 @@
-import { Session } from '@supabase/supabase-js';
+import { ID, Permission, Role, type Models } from 'appwrite';
 import { Account, Goal, Reminder } from '../types';
 import { MonoExpireData, normalizeSyncData, sortAccounts, sortGoals } from './syncService';
-import { supabase } from './supabaseClient';
+import {
+  appwriteAccount,
+  appwriteConfig,
+  appwriteTables,
+  isAppwriteAuthError,
+} from './appwriteClient';
 
 export type CloudSyncStatus = 'disabled' | 'signed_out' | 'syncing' | 'synced' | 'error';
 export type CloudItemType = 'subscription' | 'reminder' | 'goal';
@@ -19,6 +24,22 @@ interface UpsertCloudSyncRow extends CloudSyncRow {
   user_id: string;
 }
 
+interface AppwriteCloudSyncRow extends Models.Row {
+  item_type: CloudItemType;
+  item_id: string;
+  payload_json: string;
+  updated_at: string;
+  deleted_at?: string;
+  device_id?: string;
+}
+
+export interface CloudSession {
+  user: {
+    id: string;
+    email?: string;
+  };
+}
+
 export interface CloudSyncResult {
   data: MonoExpireData;
   downloadedCount: number;
@@ -32,6 +53,25 @@ const dateValue = (value?: string | null): number => {
 };
 
 const keyFor = (type: CloudItemType, id: string) => `${type}:${id}`;
+
+const appwriteRowIdPattern = /^[A-Za-z0-9][A-Za-z0-9._-]{0,35}$/;
+
+const hashKey = (value: string): string => {
+  let hash = 0x811c9dc5;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+
+  return (hash >>> 0).toString(36);
+};
+
+const rowIdFor = (type: CloudItemType, id: string): string => {
+  if (appwriteRowIdPattern.test(id)) return id;
+
+  return `${type}-${hashKey(keyFor(type, id))}`;
+};
 
 const itemUpdatedAt = (item: Account | Reminder | Goal): string => {
   return item.updatedAt || new Date().toISOString();
@@ -79,6 +119,48 @@ const rowToItem = (row: CloudSyncRow): Account | Reminder | Goal | null => {
   } as Account | Reminder | Goal;
 };
 
+const isCloudItemType = (value: unknown): value is CloudItemType => {
+  return value === 'subscription' || value === 'reminder' || value === 'goal';
+};
+
+const parsePayloadJson = (value: string): unknown => {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+};
+
+const appwriteRowToCloudRow = (row: AppwriteCloudSyncRow): CloudSyncRow | null => {
+  if (!isCloudItemType(row.item_type) || !row.item_id || !row.updated_at) {
+    return null;
+  }
+
+  return {
+    item_type: row.item_type,
+    item_id: row.item_id,
+    payload: parsePayloadJson(row.payload_json || '{}'),
+    updated_at: row.updated_at,
+    deleted_at: row.deleted_at || null,
+    device_id: row.device_id || null,
+  };
+};
+
+const cloudRowToAppwriteData = (row: UpsertCloudSyncRow) => ({
+  item_type: row.item_type,
+  item_id: row.item_id,
+  payload_json: JSON.stringify(row.payload),
+  updated_at: row.updated_at,
+  deleted_at: row.deleted_at || '',
+  device_id: row.device_id || '',
+});
+
+const rowPermissionsFor = (userId: string): string[] => [
+  Permission.read(Role.user(userId)),
+  Permission.update(Role.user(userId)),
+  Permission.delete(Role.user(userId)),
+];
+
 const addItem = (data: MonoExpireData, item: Account | Reminder | Goal) => {
   if (item.deletedAt) return;
 
@@ -91,66 +173,120 @@ const addItem = (data: MonoExpireData, item: Account | Reminder | Goal) => {
   }
 };
 
-const getAuthenticatedUserId = async (): Promise<string> => {
-  if (!supabase) throw new Error('Supabase is not configured');
+const requireAppwriteAccount = () => {
+  if (!appwriteAccount) throw new Error('Appwrite is not configured');
 
-  const { data, error } = await supabase.auth.getUser();
-  if (error) throw error;
-  if (!data.user) throw new Error('Not signed in');
-
-  return data.user.id;
+  return appwriteAccount;
 };
 
-export const getCloudSession = async (): Promise<Session | null> => {
-  if (!supabase) return null;
+const requireAppwriteTables = () => {
+  if (!appwriteTables) throw new Error('Appwrite is not configured');
 
-  const { data, error } = await supabase.auth.getSession();
-  if (error) throw error;
+  return appwriteTables;
+};
 
-  return data.session;
+const clearMagicUrlParams = () => {
+  const params = new URLSearchParams(window.location.search);
+  ['userId', 'secret', 'expire', 'phrase'].forEach(param => params.delete(param));
+  const search = params.toString();
+  const cleanUrl = `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`;
+
+  window.history.replaceState({}, document.title, cleanUrl);
+};
+
+const completePendingMagicUrlSession = async (): Promise<void> => {
+  const userId = new URLSearchParams(window.location.search).get('userId');
+  const secret = new URLSearchParams(window.location.search).get('secret');
+
+  if (!userId || !secret) return;
+
+  const account = requireAppwriteAccount();
+  await account.createSession({ userId, secret });
+  clearMagicUrlParams();
+};
+
+const getAuthenticatedUserId = async (): Promise<string> => {
+  const account = requireAppwriteAccount();
+
+  try {
+    const user = await account.get();
+
+    return user.$id;
+  } catch (error) {
+    if (isAppwriteAuthError(error)) {
+      throw new Error('Not signed in');
+    }
+
+    throw error;
+  }
+};
+
+export const getCloudSession = async (): Promise<CloudSession | null> => {
+  if (!appwriteAccount) return null;
+
+  try {
+    await completePendingMagicUrlSession();
+    const user = await appwriteAccount.get();
+
+    return {
+      user: {
+        id: user.$id,
+        email: user.email || undefined,
+      },
+    };
+  } catch (error) {
+    if (isAppwriteAuthError(error)) {
+      return null;
+    }
+
+    throw error;
+  }
 };
 
 export const signInToCloud = async (email: string): Promise<void> => {
-  if (!supabase) throw new Error('Supabase is not configured');
+  const account = requireAppwriteAccount();
+  const redirectUrl = `${window.location.origin}${window.location.pathname}`;
 
-  const { error } = await supabase.auth.signInWithOtp({
+  await account.createMagicURLToken({
+    userId: ID.unique(),
     email,
-    options: {
-      emailRedirectTo: window.location.origin,
-      shouldCreateUser: true,
-    },
+    url: redirectUrl,
   });
-
-  if (error) throw error;
 };
 
 export const signOutFromCloud = async (): Promise<void> => {
-  if (!supabase) return;
+  if (!appwriteAccount) return;
 
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  try {
+    await appwriteAccount.deleteSession({ sessionId: 'current' });
+  } catch (error) {
+    if (!isAppwriteAuthError(error)) throw error;
+  }
 };
 
 export const syncMonoExpireData = async (
   localData: MonoExpireData,
   deviceId: string
 ): Promise<CloudSyncResult> => {
-  if (!supabase) throw new Error('Supabase is not configured');
-
+  const tables = requireAppwriteTables();
   const userId = await getAuthenticatedUserId();
   const normalizedLocal = normalizeSyncData(localData);
   const localRows = toRows(normalizedLocal, userId, deviceId);
   const localMap = new Map(localRows.map(row => [keyFor(row.item_type, row.item_id), row]));
 
-  const { data: remoteRows, error } = await supabase
-    .from('monoexpire_items')
-    .select('item_type,item_id,payload,updated_at,deleted_at,device_id')
-    .eq('user_id', userId);
-
-  if (error) throw error;
+  const remoteResult = await tables.listRows<AppwriteCloudSyncRow>({
+    databaseId: appwriteConfig.databaseId,
+    tableId: appwriteConfig.tableId,
+    queries: [],
+    total: false,
+    ttl: 0,
+  });
+  const remoteRows = remoteResult.rows
+    .map(appwriteRowToCloudRow)
+    .filter((row): row is CloudSyncRow => Boolean(row));
 
   const remoteMap = new Map(
-    ((remoteRows || []) as CloudSyncRow[]).map(row => [keyFor(row.item_type, row.item_id), row])
+    remoteRows.map(row => [keyFor(row.item_type, row.item_id), row])
   );
   const seen = new Set<string>();
   const merged: MonoExpireData = { accounts: [], reminders: [], goals: [] };
@@ -198,11 +334,17 @@ export const syncMonoExpireData = async (
   });
 
   if (rowsToUpload.length > 0) {
-    const { error: upsertError } = await supabase
-      .from('monoexpire_items')
-      .upsert(rowsToUpload, { onConflict: 'user_id,item_type,item_id' });
+    const permissions = rowPermissionsFor(userId);
 
-    if (upsertError) throw upsertError;
+    await Promise.all(rowsToUpload.map(row => (
+      tables.upsertRow<AppwriteCloudSyncRow>({
+        databaseId: appwriteConfig.databaseId,
+        tableId: appwriteConfig.tableId,
+        rowId: rowIdFor(row.item_type, row.item_id),
+        data: cloudRowToAppwriteData(row),
+        permissions,
+      })
+    )));
   }
 
   return {
@@ -222,12 +364,10 @@ export const markCloudItemDeleted = async (
   deviceId: string,
   deletedAt = new Date().toISOString()
 ): Promise<void> => {
-  if (!supabase) return;
+  if (!appwriteTables) return;
 
   const userId = await getAuthenticatedUserId();
-  const { error } = await supabase
-    .from('monoexpire_items')
-    .upsert({
+  const row: UpsertCloudSyncRow = {
       user_id: userId,
       item_type: itemType,
       item_id: itemId,
@@ -235,7 +375,13 @@ export const markCloudItemDeleted = async (
       updated_at: deletedAt,
       deleted_at: deletedAt,
       device_id: deviceId,
-    }, { onConflict: 'user_id,item_type,item_id' });
+  };
 
-  if (error) throw error;
+  await appwriteTables.upsertRow<AppwriteCloudSyncRow>({
+    databaseId: appwriteConfig.databaseId,
+    tableId: appwriteConfig.tableId,
+    rowId: rowIdFor(itemType, itemId),
+    data: cloudRowToAppwriteData(row),
+    permissions: rowPermissionsFor(userId),
+  });
 };
