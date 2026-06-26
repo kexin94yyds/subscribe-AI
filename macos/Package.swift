@@ -8,11 +8,12 @@ let package = Package(
         .macOS(.v13)
     ],
     products: [
+        .executable(name: "MonoExpire", targets: ["MonoExpireMac"]),
         .library(name: "MonoExpireMacSupport", targets: ["MonoExpireMacSupport"])
     ],
     targets: [
         .target(name: "MonoExpireMacSupport"),
+        .executableTarget(name: "MonoExpireMac", dependencies: ["MonoExpireMacSupport"]),
         .testTarget(name: "MonoExpireMacSupportTests", dependencies: ["MonoExpireMacSupport"])
     ]
 )
-
