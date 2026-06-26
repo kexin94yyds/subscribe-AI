@@ -3,22 +3,47 @@ client:
   file-system: device-agnostic
 tools: {}
 targets:
+  "MonoExpire-arm64-apple-macosx-debug.exe": ["<MonoExpire-arm64-apple-macosx-debug.exe>"]
+  "MonoExpireMac-arm64-apple-macosx-debug.module": ["<MonoExpireMac-arm64-apple-macosx-debug.module>"]
   "MonoExpireMacPackageTests-arm64-apple-macosx-debug.module": ["<MonoExpireMacPackageTests-arm64-apple-macosx-debug.module>"]
   "MonoExpireMacPackageTests-arm64-apple-macosx-debug.test": ["<MonoExpireMacPackageTests-arm64-apple-macosx-debug.test>"]
   "MonoExpireMacSupport-arm64-apple-macosx-debug.module": ["<MonoExpireMacSupport-arm64-apple-macosx-debug.module>"]
   "MonoExpireMacSupportTests-arm64-apple-macosx-debug.module": ["<MonoExpireMacSupportTests-arm64-apple-macosx-debug.module>"]
   "PackageStructure": ["<PackageStructure>"]
-  "main": ["<MonoExpireMacSupport-arm64-apple-macosx-debug.module>"]
-  "test": ["<MonoExpireMacPackageTests-arm64-apple-macosx-debug.test>","<MonoExpireMacSupport-arm64-apple-macosx-debug.module>","<MonoExpireMacSupportTests-arm64-apple-macosx-debug.module>"]
+  "main": ["<MonoExpire-arm64-apple-macosx-debug.exe>","<MonoExpireMac-arm64-apple-macosx-debug.module>","<MonoExpireMacSupport-arm64-apple-macosx-debug.module>"]
+  "test": ["<MonoExpire-arm64-apple-macosx-debug.exe>","<MonoExpireMac-arm64-apple-macosx-debug.module>","<MonoExpireMacPackageTests-arm64-apple-macosx-debug.test>","<MonoExpireMacSupport-arm64-apple-macosx-debug.module>","<MonoExpireMacSupportTests-arm64-apple-macosx-debug.module>"]
 default: "main"
 nodes:
+  "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
   "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/":
     is-directory-structure: true
     content-exclusion-patterns: [".git",".build"]
   "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/":
     is-directory-structure: true
     content-exclusion-patterns: [".git",".build"]
+  "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire":
+    is-mutated: true
 commands:
+  "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire-entitlement.plist":
+    tool: write-auxiliary-file
+    inputs: ["<entitlement-plist>","<com.apple.security.get-task-allow>"]
+    outputs: ["/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire-entitlement.plist"]
+    description: "Write auxiliary file /Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire-entitlement.plist"
+
+  "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire.product/Objects.LinkFileList":
+    tool: write-auxiliary-file
+    inputs: ["<link-file-list>","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.swift.o","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.swift.o"]
+    outputs: ["/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire.product/Objects.LinkFileList"]
+    description: "Write auxiliary file /Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire.product/Objects.LinkFileList"
+
+  "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/main.swift"]
+    outputs: ["/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/sources"]
+    description: "Write auxiliary file /Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/sources"
+
   "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/sources":
     tool: write-auxiliary-file
     inputs: ["<sources-file-list>","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.derived/runner.swift"]
@@ -55,6 +80,16 @@ commands:
     always-out-of-date: "true"
     description: "Write auxiliary file /Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
 
+  "<MonoExpire-arm64-apple-macosx-debug.exe>":
+    tool: phony
+    inputs: ["<MonoExpire-arm64-apple-macosx-debug.exe-CodeSigning>"]
+    outputs: ["<MonoExpire-arm64-apple-macosx-debug.exe>"]
+
+  "<MonoExpireMac-arm64-apple-macosx-debug.module>":
+    tool: phony
+    inputs: ["/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.swift.o","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMac.swiftmodule"]
+    outputs: ["<MonoExpireMac-arm64-apple-macosx-debug.module>"]
+
   "<MonoExpireMacPackageTests-arm64-apple-macosx-debug.module>":
     tool: phony
     inputs: ["/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/runner.swift.o","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacPackageTests.swiftmodule"]
@@ -74,6 +109,27 @@ commands:
     tool: phony
     inputs: ["/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/StaticFileResponderTests.swift.o","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacSupportTests.swiftmodule"]
     outputs: ["<MonoExpireMacSupportTests-arm64-apple-macosx-debug.module>"]
+
+  "C.MonoExpire-arm64-apple-macosx-debug.exe":
+    tool: shell
+    inputs: ["/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.swift.o","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.swift.o","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire.product/Objects.LinkFileList"]
+    outputs: ["/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire"]
+    description: "Linking ./.build/arm64-apple-macosx/debug/MonoExpire"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-L","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug","-o","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire","-module-name","MonoExpire","-Xlinker","-no_warn_duplicate_libraries","-emit-executable","-Xlinker","-alias","-Xlinker","_MonoExpireMac_main","-Xlinker","_main","-Xlinker","-rpath","-Xlinker","@loader_path","@/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire.product/Objects.LinkFileList","-Xlinker","-rpath","-Xlinker","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-6.2/macosx","-target","arm64-apple-macosx13.0","-Xlinker","-add_ast_path","-Xlinker","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMac.swiftmodule","-Xlinker","-add_ast_path","-Xlinker","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacSupport.swiftmodule","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g"]
+
+  "C.MonoExpire-arm64-apple-macosx-debug.exe-entitlements":
+    tool: shell
+    inputs: ["/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire-entitlement.plist"]
+    outputs: ["<MonoExpire-arm64-apple-macosx-debug.exe-CodeSigning>"]
+    description: "Applying debug entitlements to ./.build/arm64-apple-macosx/debug/MonoExpire"
+    args: ["codesign","--force","--sign","-","--entitlements","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire-entitlement.plist","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpire"]
+
+  "C.MonoExpireMac-arm64-apple-macosx-debug.module":
+    tool: shell
+    inputs: ["/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/main.swift","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacSupport.swiftmodule","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/sources"]
+    outputs: ["/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.swift.o","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMac.swiftmodule"]
+    description: "Compiling Swift Module 'MonoExpireMac' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","MonoExpireMac","-emit-dependencies","-emit-module","-emit-module-path","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMac.swiftmodule","-output-file-map","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/output-file-map.json","-incremental","-c","@/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/sources","-I","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx13.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j10","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-Xfrontend","-entry-point-function-name","-Xfrontend","MonoExpireMac_main","-swift-version","5","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","macos"]
 
   "C.MonoExpireMacPackageTests-arm64-apple-macosx-debug.module":
     tool: shell
@@ -105,7 +161,7 @@ commands:
 
   "PackageStructure":
     tool: package-structure-tool
-    inputs: ["/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/","/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/","/Users/apple/Downloads/monoexpire/macos/Package.swift","/Users/apple/Downloads/monoexpire/macos/Package.resolved"]
+    inputs: ["/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/","/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/","/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/","/Users/apple/Downloads/monoexpire/macos/Package.swift","/Users/apple/Downloads/monoexpire/macos/Package.resolved"]
     outputs: ["<PackageStructure>"]
     description: "Planning build"
     allow-missing-inputs: true
