@@ -40,6 +40,10 @@ export interface CloudSession {
   };
 }
 
+export interface CloudEmailOtpChallenge {
+  userId: string;
+}
+
 export interface CloudSyncResult {
   data: MonoExpireData;
   downloadedCount: number;
@@ -270,6 +274,42 @@ export const signInToCloud = async (email: string): Promise<void> => {
     email,
     url: redirectUrl,
   });
+};
+
+export const sendCloudEmailOtp = async (email: string): Promise<CloudEmailOtpChallenge> => {
+  const account = requireAppwriteAccount();
+  const token = await account.createEmailToken({
+    userId: ID.unique(),
+    email,
+  });
+
+  return {
+    userId: token.userId,
+  };
+};
+
+export const verifyCloudEmailOtp = async (
+  userId: string,
+  otp: string
+): Promise<CloudSession> => {
+  const account = requireAppwriteAccount();
+
+  try {
+    await account.createSession({ userId, secret: otp });
+  } catch (error) {
+    if (!isSessionAlreadyActiveError(error)) {
+      throw error;
+    }
+  }
+
+  const user = await account.get();
+
+  return {
+    user: {
+      id: user.$id,
+      email: user.email || undefined,
+    },
+  };
 };
 
 export const signOutFromCloud = async (): Promise<void> => {
