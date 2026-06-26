@@ -2,11 +2,11 @@
   "": {
     "swift-dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/primary.swiftdeps"
   },
-  "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/Placeholder.swift": {
-    "dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/Placeholder.d",
-    "object": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/Placeholder.swift.o",
-    "swiftmodule": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/Placeholder~partial.swiftmodule",
-    "swift-dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/Placeholder.swiftdeps",
-    "diagnostics": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/Placeholder.dia"
+  "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/StaticFileServer.swift": {
+    "dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.d",
+    "object": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.swift.o",
+    "swiftmodule": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer~partial.swiftmodule",
+    "swift-dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.swiftdeps",
+    "diagnostics": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.dia"
   }
 }
