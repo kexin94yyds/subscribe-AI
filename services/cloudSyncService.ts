@@ -193,6 +193,11 @@ const clearMagicUrlParams = () => {
   window.history.replaceState({}, document.title, cleanUrl);
 };
 
+const isSessionAlreadyActiveError = (error: unknown): boolean => (
+  error instanceof Error &&
+  error.message.toLowerCase().includes('session is active')
+);
+
 const completePendingMagicUrlSession = async (): Promise<void> => {
   const userId = new URLSearchParams(window.location.search).get('userId');
   const secret = new URLSearchParams(window.location.search).get('secret');
@@ -200,7 +205,13 @@ const completePendingMagicUrlSession = async (): Promise<void> => {
   if (!userId || !secret) return;
 
   const account = requireAppwriteAccount();
-  await account.createSession({ userId, secret });
+  try {
+    await account.createSession({ userId, secret });
+  } catch (error) {
+    if (!isSessionAlreadyActiveError(error)) {
+      throw error;
+    }
+  }
   clearMagicUrlParams();
 };
 
