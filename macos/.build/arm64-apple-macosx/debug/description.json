@@ -32,7 +32,7 @@
         },
         {
           "kind" : "file",
-          "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/main.swift"
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/MonoExpireApp.swift"
         },
         {
           "kind" : "file",
@@ -52,7 +52,7 @@
       "moduleOutputPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMac.swiftmodule",
       "objects" : [
         "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/CalendarBridge.swift.o",
-        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.swift.o"
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/MonoExpireApp.swift.o"
       ],
       "otherArguments" : [
         "-target",
@@ -111,7 +111,7 @@
         },
         {
           "kind" : "file",
-          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.swift.o"
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/MonoExpireApp.swift.o"
         },
         {
           "kind" : "file",
@@ -121,7 +121,7 @@
       "prepareForIndexing" : false,
       "sources" : [
         "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/CalendarBridge.swift",
-        "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/main.swift"
+        "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/MonoExpireApp.swift"
       ],
       "tempsPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build",
       "wholeModuleOptimization" : false
@@ -439,7 +439,7 @@
       "macos",
       "-c",
       "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/CalendarBridge.swift",
-      "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/main.swift",
+      "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/MonoExpireApp.swift",
       "-I",
       "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules",
       "-target",
@@ -738,7 +738,7 @@
         },
         {
           "kind" : "file",
-          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/main.swift.o"
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/MonoExpireApp.swift.o"
         },
         {
           "kind" : "file",
@@ -764,7 +764,7 @@
         },
         {
           "kind" : "file",
-          "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/main.swift"
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMac/MonoExpireApp.swift"
         }
       ],
       "outputFilePath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMac.build/sources"

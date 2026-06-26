@@ -2,8 +2,10 @@ import AppKit
 import MonoExpireMacSupport
 import WebKit
 
-private let appName = "MonoExpire"
-private let serverPort: UInt16 = 41731
+private enum MonoExpireConstants {
+    static let appName = "MonoExpire"
+    static let serverPort: UInt16 = 41731
+}
 
 private enum MonoExpireMacError: Error, LocalizedError {
     case missingWebRoot([String])
@@ -35,7 +37,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         Task {
             do {
                 let webRoot = try resolveWebRoot()
-                let server = try StaticFileServer(webRoot: webRoot, port: serverPort)
+                let server = try StaticFileServer(webRoot: webRoot, port: MonoExpireConstants.serverPort)
                 try await server.start()
                 staticServer = server
                 showMainWindow(url: server.baseURL)
@@ -93,7 +95,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered,
             defer: false
         )
-        window.title = appName
+        window.title = MonoExpireConstants.appName
         window.center()
         window.contentView = webView
         window.makeKeyAndOrderFront(nil)
@@ -117,7 +119,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered,
             defer: false
         )
-        window.title = appName
+        window.title = MonoExpireConstants.appName
         window.center()
         window.contentView = label
         window.makeKeyAndOrderFront(nil)
@@ -127,8 +129,14 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-let app = NSApplication.shared
-let delegate = AppDelegate()
-app.delegate = delegate
-app.run()
-_ = delegate
+@main
+private enum MonoExpireMac {
+    @MainActor
+    static func main() {
+        let app = NSApplication.shared
+        let delegate = AppDelegate()
+        app.delegate = delegate
+        app.run()
+        _ = delegate
+    }
+}
