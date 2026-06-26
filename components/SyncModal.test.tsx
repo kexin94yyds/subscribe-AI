@@ -48,4 +48,21 @@ describe('SyncModal Email OTP login', () => {
     expect(html).toContain('验证码');
     expect(html).toContain('登录并同步');
   });
+
+  it('keeps the OTP controls visible after a verification error', () => {
+    const html = renderToStaticMarkup(
+      <SyncModal
+        {...baseProps}
+        status="error"
+        statusMessage="验证码无效，请重试"
+        pendingOtpEmail="person@example.com"
+        onSendOtp={vi.fn()}
+        onVerifyOtp={vi.fn()}
+      />
+    );
+
+    expect(html).toContain('验证码无效，请重试');
+    expect(html).toContain('person@example.com');
+    expect(html).toContain('登录并同步');
+  });
 });
