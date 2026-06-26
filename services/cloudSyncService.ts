@@ -204,6 +204,12 @@ const completePendingMagicUrlSession = async (): Promise<void> => {
   clearMagicUrlParams();
 };
 
+const hasPendingMagicUrlSession = (): boolean => {
+  const params = new URLSearchParams(window.location.search);
+
+  return Boolean(params.get('userId') && params.get('secret'));
+};
+
 const getAuthenticatedUserId = async (): Promise<string> => {
   const account = requireAppwriteAccount();
 
@@ -223,6 +229,8 @@ const getAuthenticatedUserId = async (): Promise<string> => {
 export const getCloudSession = async (): Promise<CloudSession | null> => {
   if (!appwriteAccount) return null;
 
+  const isCompletingMagicUrlSession = hasPendingMagicUrlSession();
+
   try {
     await completePendingMagicUrlSession();
     const user = await appwriteAccount.get();
@@ -234,7 +242,7 @@ export const getCloudSession = async (): Promise<CloudSession | null> => {
       },
     };
   } catch (error) {
-    if (isAppwriteAuthError(error)) {
+    if (isAppwriteAuthError(error) && !isCompletingMagicUrlSession) {
       return null;
     }
 
