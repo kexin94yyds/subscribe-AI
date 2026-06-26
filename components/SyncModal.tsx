@@ -9,13 +9,15 @@ interface SyncModalProps {
   onClose: () => void;
   onExport: () => void;
   onImport: () => void;
-  onSignIn: (email: string) => Promise<void>;
+  onSendOtp: (email: string) => Promise<void>;
+  onVerifyOtp: (otp: string) => Promise<void>;
   onSignOut: () => Promise<void>;
   onSyncNow: () => Promise<void>;
   counts: SyncCounts;
   isNativePlatform: boolean;
   status: CloudSyncStatus;
   statusMessage: string;
+  pendingOtpEmail?: string;
   userEmail?: string;
 }
 
@@ -24,33 +26,48 @@ export const SyncModal: React.FC<SyncModalProps> = ({
   onClose,
   onExport,
   onImport,
-  onSignIn,
+  onSendOtp,
+  onVerifyOtp,
   onSignOut,
   onSyncNow,
   counts,
   isNativePlatform,
   status,
   statusMessage,
+  pendingOtpEmail,
   userEmail,
 }) => {
   const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [submitAction, setSubmitAction] = useState<'send' | 'verify' | null>(null);
 
   if (!isOpen) return null;
 
   const deviceLabel = isNativePlatform ? '手机端' : '电脑端';
   const DeviceIcon = isNativePlatform ? Smartphone : Laptop;
-  const isBusy = status === 'syncing' || isSubmitting;
+  const isBusy = status === 'syncing' || submitAction !== null;
   const canSync = status === 'synced' || status === 'error';
 
-  const handleSignIn = async () => {
+  const handleSendOtp = async () => {
     if (!email.trim()) return;
 
-    setIsSubmitting(true);
+    setSubmitAction('send');
     try {
-      await onSignIn(email.trim());
+      await onSendOtp(email.trim());
     } finally {
-      setIsSubmitting(false);
+      setSubmitAction(null);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp.trim()) return;
+
+    setSubmitAction('verify');
+    try {
+      await onVerifyOtp(otp.trim());
+      setOtp('');
+    } finally {
+      setSubmitAction(null);
     }
   };
 
@@ -105,17 +122,51 @@ export const SyncModal: React.FC<SyncModalProps> = ({
         </div>
 
         {status === 'signed_out' && (
-          <div className="mb-4 flex flex-col gap-2 sm:flex-row">
+          <div className="mb-4 flex flex-col gap-3">
+            {pendingOtpEmail && (
+              <p className="text-xs text-gray-500">
+                验证码已发送至 <span className="font-semibold text-gray-700">{pendingOtpEmail}</span>
+              </p>
+            )}
+            <div className="flex flex-col gap-2 sm:flex-row">
             <input
               type="email"
               value={email}
               onChange={event => setEmail(event.target.value)}
               placeholder="email@example.com"
+              disabled={isBusy}
               className="h-11 flex-1 border border-gray-300 px-3 text-sm outline-none transition-colors focus:border-black"
             />
-            <Button onClick={handleSignIn} isLoading={isSubmitting} disabled={!email.trim()} className="h-11">
-              发送登录邮件
+            <Button
+              onClick={handleSendOtp}
+              isLoading={submitAction === 'send'}
+              disabled={!email.trim() || isBusy}
+              className="h-11"
+            >
+              {pendingOtpEmail ? '重新发送验证码' : '发送验证码'}
             </Button>
+            </div>
+            {pendingOtpEmail && (
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={otp}
+                  onChange={event => setOtp(event.target.value)}
+                  placeholder="验证码"
+                  disabled={isBusy}
+                  className="h-11 flex-1 border border-gray-300 px-3 text-sm outline-none transition-colors focus:border-black"
+                />
+                <Button
+                  onClick={handleVerifyOtp}
+                  isLoading={submitAction === 'verify'}
+                  disabled={!otp.trim() || isBusy}
+                  className="h-11"
+                >
+                  登录并同步
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

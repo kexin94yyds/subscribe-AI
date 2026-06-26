@@ -47,9 +47,10 @@ import {
   CloudSyncStatus,
   getCloudSession,
   markCloudItemDeleted,
-  signInToCloud,
+  sendCloudEmailOtp,
   signOutFromCloud,
-  syncMonoExpireData
+  syncMonoExpireData,
+  verifyCloudEmailOtp
 } from './services/cloudSyncService';
 import { isAppwriteConfigured } from './services/appwriteClient';
 import { Account, Reminder, Goal, PageType, ParsedAccountData } from './types';
@@ -200,6 +201,8 @@ export default function App() {
   const [cloudSyncStatus, setCloudSyncStatus] = useState<CloudSyncStatus>('disabled');
   const [cloudSyncMessage, setCloudSyncMessage] = useState('未配置 Appwrite');
   const [cloudUserEmail, setCloudUserEmail] = useState('');
+  const [pendingOtpUserId, setPendingOtpUserId] = useState('');
+  const [pendingOtpEmail, setPendingOtpEmail] = useState('');
   const [pendingCloudSync, setPendingCloudSync] = useState(false);
 
   // 导出到日历 (ICS格式) - 根据当前页面类型导出
@@ -441,13 +444,36 @@ export default function App() {
     setPendingCloudSync(true);
   };
 
-  const handleCloudSignIn = async (email: string) => {
+  const handleCloudSendOtp = async (email: string) => {
     try {
       setCloudSyncStatus('syncing');
-      setCloudSyncMessage('正在发送登录邮件...');
-      await signInToCloud(email);
+      setCloudSyncMessage('正在发送验证码...');
+      const challenge = await sendCloudEmailOtp(email);
+      setPendingOtpUserId(challenge.userId);
+      setPendingOtpEmail(email);
       setCloudSyncStatus('signed_out');
-      setCloudSyncMessage('登录邮件已发送，请打开邮件完成登录');
+      setCloudSyncMessage('验证码已发送，请输入邮件中的验证码');
+    } catch (error) {
+      setCloudSyncStatus('error');
+      setCloudSyncMessage(getSyncErrorMessage(error));
+    }
+  };
+
+  const handleCloudVerifyOtp = async (otp: string) => {
+    if (!pendingOtpUserId) {
+      setCloudSyncStatus('error');
+      setCloudSyncMessage('请先发送验证码');
+      return;
+    }
+
+    try {
+      setCloudSyncStatus('syncing');
+      setCloudSyncMessage('正在验证验证码...');
+      const session = await verifyCloudEmailOtp(pendingOtpUserId, otp);
+      setCloudUserEmail(session.user.email || pendingOtpEmail || '已登录');
+      setPendingOtpUserId('');
+      setPendingOtpEmail('');
+      await runCloudSync();
     } catch (error) {
       setCloudSyncStatus('error');
       setCloudSyncMessage(getSyncErrorMessage(error));
@@ -458,6 +484,8 @@ export default function App() {
     try {
       await signOutFromCloud();
       setCloudUserEmail('');
+      setPendingOtpUserId('');
+      setPendingOtpEmail('');
       setCloudSyncStatus('signed_out');
       setCloudSyncMessage('已退出云同步');
     } catch (error) {
@@ -1263,13 +1291,15 @@ export default function App() {
         onClose={() => setIsSyncModalOpen(false)}
         onExport={handleExport}
         onImport={handleImport}
-        onSignIn={handleCloudSignIn}
+        onSendOtp={handleCloudSendOtp}
+        onVerifyOtp={handleCloudVerifyOtp}
         onSignOut={handleCloudSignOut}
         onSyncNow={() => runCloudSync()}
         counts={syncCounts}
         isNativePlatform={Capacitor.isNativePlatform()}
         status={cloudSyncStatus}
         statusMessage={cloudSyncMessage}
+        pendingOtpEmail={pendingOtpEmail}
         userEmail={cloudUserEmail}
       />
     </div>
