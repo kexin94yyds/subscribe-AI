@@ -46,7 +46,8 @@ export const SyncModal: React.FC<SyncModalProps> = ({
   const deviceLabel = isNativePlatform ? '手机端' : '电脑端';
   const DeviceIcon = isNativePlatform ? Smartphone : Laptop;
   const isBusy = status === 'syncing' || submitAction !== null;
-  const canSync = status === 'synced' || status === 'error';
+  const canSync = Boolean(userEmail) && (status === 'synced' || status === 'error');
+  const showLoginControls = !userEmail && (status === 'signed_out' || status === 'syncing' || status === 'error');
 
   const handleSendOtp = async () => {
     if (!email.trim()) return;
@@ -121,7 +122,7 @@ export const SyncModal: React.FC<SyncModalProps> = ({
           </p>
         </div>
 
-        {status === 'signed_out' && (
+        {showLoginControls && (
           <div className="mb-4 flex flex-col gap-3">
             {pendingOtpEmail && (
               <p className="text-xs text-gray-500">
@@ -129,22 +130,22 @@ export const SyncModal: React.FC<SyncModalProps> = ({
               </p>
             )}
             <div className="flex flex-col gap-2 sm:flex-row">
-            <input
-              type="email"
-              value={email}
-              onChange={event => setEmail(event.target.value)}
-              placeholder="email@example.com"
-              disabled={isBusy}
-              className="h-11 flex-1 border border-gray-300 px-3 text-sm outline-none transition-colors focus:border-black"
-            />
-            <Button
-              onClick={handleSendOtp}
-              isLoading={submitAction === 'send'}
-              disabled={!email.trim() || isBusy}
-              className="h-11"
-            >
-              {pendingOtpEmail ? '重新发送验证码' : '发送验证码'}
-            </Button>
+              <input
+                type="email"
+                value={email}
+                onChange={event => setEmail(event.target.value)}
+                placeholder="email@example.com"
+                disabled={isBusy}
+                className="h-11 flex-1 border border-gray-300 px-3 text-sm outline-none transition-colors focus:border-black"
+              />
+              <Button
+                onClick={handleSendOtp}
+                isLoading={submitAction === 'send'}
+                disabled={!email.trim() || isBusy}
+                className="h-11"
+              >
+                {pendingOtpEmail ? '重新发送验证码' : '发送验证码'}
+              </Button>
             </div>
             {pendingOtpEmail && (
               <div className="flex flex-col gap-2 sm:flex-row">
