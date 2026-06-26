@@ -45,8 +45,10 @@ describe('buildCalendarExportEvents', () => {
       alerts: [-(3 * 24 * 60), -(2 * 24 * 60), -(24 * 60), -60],
       dedupe: true,
     });
-    expect(new Date(events[0].startDate).toISOString()).toBe('2026-08-27T00:00:00.000Z');
-    expect(new Date(events[0].endDate).toISOString()).toBe('2026-08-28T00:00:00.000Z');
+    const start = new Date(events[0].startDate);
+    const end = new Date(events[0].endDate);
+    expect([start.getFullYear(), start.getMonth(), start.getDate(), start.getHours()]).toEqual([2026, 7, 27, 0]);
+    expect([end.getFullYear(), end.getMonth(), end.getDate(), end.getHours()]).toEqual([2026, 7, 28, 0]);
   });
 
   it('builds reminder events from the current day and reminder times', () => {
@@ -87,4 +89,3 @@ describe('buildCalendarExportEvents', () => {
     });
   });
 });
-
