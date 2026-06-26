@@ -1,7 +1,12 @@
 import { Account, Goal, PageType, Reminder } from '../types';
 import { MonoExpireData } from './syncService';
 
+export type CalendarExportSourceType = 'subscription' | 'reminder' | 'goal';
+
 export interface CalendarExportEvent {
+  uid: string;
+  sourceType: CalendarExportSourceType;
+  sourceId: string;
   title: string;
   startDate: number;
   endDate: number;
@@ -28,11 +33,23 @@ const addDays = (date: Date, days: number): Date => {
   return copy;
 };
 
+const dateStamp = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}${month}${day}`;
+};
+
+const timeStamp = (time: string): string => time.replace(':', '').padStart(4, '0');
+
 const subscriptionEvent = (account: Account): CalendarExportEvent => {
   const startDate = dateAtLocalMidnight(account.expirationDate);
   const endDate = addDays(startDate, 1);
 
   return {
+    uid: `monoexpire-subscription-${account.id}`,
+    sourceType: 'subscription',
+    sourceId: account.id,
     title: `${account.name} 订阅到期`,
     startDate: startDate.getTime(),
     endDate: endDate.getTime(),
@@ -80,6 +97,9 @@ const reminderEvents = (reminder: Reminder, baseDate: Date): CalendarExportEvent
       endTime.setMinutes(endTime.getMinutes() + 30);
 
       events.push({
+        uid: `monoexpire-reminder-${reminder.id}-${dateStamp(eventDate)}-${timeStamp(time)}`,
+        sourceType: 'reminder',
+        sourceId: reminder.id,
         title: reminder.name,
         startDate: startTime.getTime(),
         endDate: endTime.getTime(),
@@ -103,6 +123,9 @@ const goalEvent = (goal: Goal): CalendarExportEvent | null => {
   const endDate = addDays(startDate, 1);
 
   return {
+    uid: `monoexpire-goal-${goal.id}`,
+    sourceType: 'goal',
+    sourceId: goal.id,
     title: `🎯 ${goal.name} 截止`,
     startDate: startDate.getTime(),
     endDate: endDate.getTime(),
@@ -137,4 +160,3 @@ export const calendarExportTypeLabel = (pageType: PageType): string => {
   if (pageType === 'reminder') return '提醒';
   return '目标';
 };
-
