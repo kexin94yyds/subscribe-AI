@@ -23,7 +23,7 @@ This keeps the proven React, local storage, Appwrite Email OTP, and sync merge l
 - `macos/Sources/MonoExpireMac`: AppKit entry point, window, and `WKWebView` loading.
 - `macos/Sources/MonoExpireMacSupport`: static file server support code with testable path resolution and response generation.
 - `macos/Tests/MonoExpireMacSupportTests`: Swift tests for SPA fallback, MIME selection, and path traversal protection.
-- `script/build_and_run.sh`: single project-local entrypoint to build web assets, build Swift, stage `dist/MonoExpire.app`, and launch or verify it.
+- `script/build_and_run.sh`: single project-local entrypoint to build web assets, build Swift, stage `release/mac/MonoExpire.app`, and launch or verify it.
 - `.codex/environments/environment.toml`: Codex app Run action pointing at `./script/build_and_run.sh`.
 
 ## Data And Sync
@@ -47,4 +47,3 @@ Because the Mac app uses port `41731`, it has a separate local storage origin fr
 - `npm run build`
 - `./script/build_and_run.sh --verify`
 - `curl -I http://localhost:41731/` while the app is running
-

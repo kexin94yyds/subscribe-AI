@@ -63,10 +63,10 @@
 
 **Interfaces:**
 - Produces: `./script/build_and_run.sh [run|--verify|--logs|--telemetry|--debug]`
-- Produces: `dist/MonoExpire.app`
+- Produces: `release/mac/MonoExpire.app`
 - Produces npm script `mac:run`.
 
-- [ ] Add `script/build_and_run.sh` that stops `MonoExpire`, runs `npm run build`, runs `swift build --package-path macos`, stages `dist/MonoExpire.app`, copies `dist` web assets into `Contents/Resources/dist`, writes `Info.plist`, and launches the bundle.
+- [ ] Add `script/build_and_run.sh` that stops `MonoExpire`, runs `npm run build`, runs `swift build --package-path macos`, stages `release/mac/MonoExpire.app`, copies `dist` web assets into `Contents/Resources/dist`, writes `Info.plist`, and launches the bundle.
 - [ ] Add `--verify` mode that launches the app, checks `pgrep -x MonoExpire`, and checks `curl -I http://localhost:41731/`.
 - [ ] Add Codex Run action pointing at `./script/build_and_run.sh`.
 - [ ] Add `mac:run` script to `package.json`.
@@ -83,4 +83,3 @@
 - [ ] Run `swift test --package-path macos`.
 - [ ] Run `./script/build_and_run.sh --verify`.
 - [ ] Confirm `git status --short` only shows intended Mac app files and generated local artifacts are either ignored or intentionally tracked.
-
