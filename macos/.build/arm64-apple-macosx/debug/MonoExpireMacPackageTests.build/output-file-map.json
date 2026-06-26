@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/primary.swiftdeps"
+  },
+  "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.derived/runner.swift": {
+    "dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/runner.d",
+    "object": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/runner.swiftdeps",
+    "diagnostics": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/runner.dia"
+  }
+}

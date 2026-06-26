@@ -1,0 +1,602 @@
+{
+  "builtTestProducts" : [
+    {
+      "binaryPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.xctest/Contents/MacOS/MonoExpireMacPackageTests",
+      "packagePath" : "/Users/apple/Downloads/monoexpire/macos",
+      "productName" : "MonoExpireMacPackageTests"
+    }
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.MonoExpireMacPackageTests-arm64-apple-macosx-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/sources",
+      "importPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.derived/runner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacSupportTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "MonoExpireMacPackageTests",
+      "moduleOutputPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacPackageTests.swiftmodule",
+      "objects" : [
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/runner.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/include/MonoExpireMacPackageTests-Swift.h",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "macos"
+      ],
+      "outputFileMapPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacPackageTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.derived/runner.swift"
+      ],
+      "tempsPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.MonoExpireMacSupport-arm64-apple-macosx-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/sources",
+      "importPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/Placeholder.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "MonoExpireMacSupport",
+      "moduleOutputPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacSupport.swiftmodule",
+      "objects" : [
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/Placeholder.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/include/MonoExpireMacSupport-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "macos"
+      ],
+      "outputFileMapPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/Placeholder.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacSupport.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/Placeholder.swift"
+      ],
+      "tempsPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.MonoExpireMacSupportTests-arm64-apple-macosx-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/sources",
+      "importPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/StaticFileResponderTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacSupport.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "MonoExpireMacSupportTests",
+      "moduleOutputPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacSupportTests.swiftmodule",
+      "objects" : [
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/StaticFileResponderTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "macos"
+      ],
+      "outputFileMapPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/StaticFileResponderTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacSupportTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/StaticFileResponderTests.swift"
+      ],
+      "tempsPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "MonoExpireMacPackageTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "MonoExpireMacPackageTests",
+      "-package-name",
+      "macos",
+      "-c",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.derived/runner.swift",
+      "-I",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/include/MonoExpireMacPackageTests-Swift.h",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "macos",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "MonoExpireMacSupport" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "MonoExpireMacSupport",
+      "-package-name",
+      "macos",
+      "-c",
+      "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/Placeholder.swift",
+      "-I",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/include/MonoExpireMacSupport-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "macos",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "MonoExpireMacSupportTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "MonoExpireMacSupportTests",
+      "-package-name",
+      "macos",
+      "-c",
+      "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/StaticFileResponderTests.swift",
+      "-I",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "macos",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "MonoExpireMacPackageTests" : [
+      "MonoExpireMacSupportTests",
+      "MonoExpireMacSupport"
+    ],
+    "MonoExpireMacSupport" : [
+
+    ],
+    "MonoExpireMacSupportTests" : [
+      "MonoExpireMacSupport"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+    "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.derived/runner.swift" : {
+      "inputs" : [
+
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.derived/runner.swift"
+        }
+      ]
+    }
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.derived/runner.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/sources"
+    },
+    "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/Placeholder.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/StaticFileResponderTests.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacPackageTests.product/Objects.LinkFileList"
+    },
+    "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/Placeholder.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/sources"
+    },
+    "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/StaticFileResponderTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/sources"
+    },
+    "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

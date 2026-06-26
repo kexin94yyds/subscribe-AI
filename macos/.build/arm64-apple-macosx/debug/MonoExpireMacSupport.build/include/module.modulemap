@@ -1,0 +1,3 @@
+module MonoExpireMacSupport {
+    header "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/include/MonoExpireMacSupport-Swift.h"
+}
