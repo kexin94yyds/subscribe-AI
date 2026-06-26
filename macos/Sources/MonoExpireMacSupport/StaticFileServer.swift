@@ -47,6 +47,20 @@ public enum StaticFileServerError: Error, Equatable, LocalizedError {
     }
 }
 
+private final class ContinuationGate: @unchecked Sendable {
+    private let lock = NSLock()
+    private var didResume = false
+
+    func resumeOnce(_ block: () -> Void) {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard !didResume else { return }
+        didResume = true
+        block()
+    }
+}
+
 public final class StaticFileServer {
     private let requestedPort: UInt16
     private let responder: StaticFileResponder
@@ -83,21 +97,22 @@ public final class StaticFileServer {
         }
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            var didResume = false
+            let gate = ContinuationGate()
             newListener.stateUpdateHandler = { [weak self] state in
-                guard !didResume else { return }
-
                 switch state {
                 case .ready:
                     self?.activePort = newListener.port.map { UInt16($0.rawValue) } ?? self?.requestedPort
-                    didResume = true
-                    continuation.resume()
+                    gate.resumeOnce {
+                        continuation.resume()
+                    }
                 case .failed(let error):
-                    didResume = true
-                    continuation.resume(throwing: StaticFileServerError.listenerFailed(error.localizedDescription))
+                    gate.resumeOnce {
+                        continuation.resume(throwing: StaticFileServerError.listenerFailed(error.localizedDescription))
+                    }
                 case .cancelled:
-                    didResume = true
-                    continuation.resume(throwing: StaticFileServerError.listenerCancelled)
+                    gate.resumeOnce {
+                        continuation.resume(throwing: StaticFileServerError.listenerCancelled)
+                    }
                 default:
                     break
                 }
