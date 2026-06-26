@@ -2,6 +2,13 @@
   "": {
     "swift-dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/primary.swiftdeps"
   },
+  "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/CalendarExportRequest.swift": {
+    "dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/CalendarExportRequest.d",
+    "object": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/CalendarExportRequest.swift.o",
+    "swiftmodule": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/CalendarExportRequest~partial.swiftmodule",
+    "swift-dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/CalendarExportRequest.swiftdeps",
+    "diagnostics": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/CalendarExportRequest.dia"
+  },
   "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/StaticFileServer.swift": {
     "dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.d",
     "object": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.swift.o",

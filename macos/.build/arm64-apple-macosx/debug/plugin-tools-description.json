@@ -219,6 +219,10 @@
       "inputs" : [
         {
           "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/CalendarExportRequest.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/StaticFileServer.swift"
         },
         {
@@ -234,6 +238,7 @@
       "moduleName" : "MonoExpireMacSupport",
       "moduleOutputPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacSupport.swiftmodule",
       "objects" : [
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/CalendarExportRequest.swift.o",
         "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.swift.o"
       ],
       "otherArguments" : [
@@ -289,6 +294,10 @@
       "outputs" : [
         {
           "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/CalendarExportRequest.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.swift.o"
         },
         {
@@ -298,6 +307,7 @@
       ],
       "prepareForIndexing" : false,
       "sources" : [
+        "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/CalendarExportRequest.swift",
         "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/StaticFileServer.swift"
       ],
       "tempsPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build",
@@ -540,6 +550,7 @@
       "-package-name",
       "macos",
       "-c",
+      "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/CalendarExportRequest.swift",
       "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/StaticFileServer.swift",
       "-I",
       "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules",
@@ -718,6 +729,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/CalendarExportRequest.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.swift.o"
         }
       ],
@@ -764,6 +779,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/CalendarExportRequest.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupport.build/StaticFileServer.swift.o"
         },
         {
@@ -783,6 +802,10 @@
         {
           "kind" : "virtual",
           "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Sources/MonoExpireMacSupport/CalendarExportRequest.swift"
         },
         {
           "kind" : "file",
