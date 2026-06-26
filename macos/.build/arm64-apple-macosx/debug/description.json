@@ -310,6 +310,10 @@
       "inputs" : [
         {
           "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/CalendarExportRequestTests.swift"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/StaticFileResponderTests.swift"
         },
         {
@@ -329,6 +333,7 @@
       "moduleName" : "MonoExpireMacSupportTests",
       "moduleOutputPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules/MonoExpireMacSupportTests.swiftmodule",
       "objects" : [
+        "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/CalendarExportRequestTests.swift.o",
         "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/StaticFileResponderTests.swift.o"
       ],
       "otherArguments" : [
@@ -383,6 +388,10 @@
       "outputs" : [
         {
           "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/CalendarExportRequestTests.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/StaticFileResponderTests.swift.o"
         },
         {
@@ -392,6 +401,7 @@
       ],
       "prepareForIndexing" : false,
       "sources" : [
+        "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/CalendarExportRequestTests.swift",
         "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/StaticFileResponderTests.swift"
       ],
       "tempsPath" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build",
@@ -590,6 +600,7 @@
       "-package-name",
       "macos",
       "-c",
+      "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/CalendarExportRequestTests.swift",
       "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/StaticFileResponderTests.swift",
       "-I",
       "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/Modules",
@@ -757,6 +768,10 @@
         },
         {
           "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/CalendarExportRequestTests.swift.o"
+        },
+        {
+          "kind" : "file",
           "name" : "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/StaticFileResponderTests.swift.o"
         }
       ],
@@ -782,6 +797,10 @@
         {
           "kind" : "virtual",
           "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/CalendarExportRequestTests.swift"
         },
         {
           "kind" : "file",

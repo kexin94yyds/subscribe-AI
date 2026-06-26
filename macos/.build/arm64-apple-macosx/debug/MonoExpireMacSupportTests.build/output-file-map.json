@@ -2,6 +2,13 @@
   "": {
     "swift-dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/primary.swiftdeps"
   },
+  "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/CalendarExportRequestTests.swift": {
+    "dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/CalendarExportRequestTests.d",
+    "object": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/CalendarExportRequestTests.swift.o",
+    "swiftmodule": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/CalendarExportRequestTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/CalendarExportRequestTests.swiftdeps",
+    "diagnostics": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/CalendarExportRequestTests.dia"
+  },
   "/Users/apple/Downloads/monoexpire/macos/Tests/MonoExpireMacSupportTests/StaticFileResponderTests.swift": {
     "dependencies": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/StaticFileResponderTests.d",
     "object": "/Users/apple/Downloads/monoexpire/macos/.build/arm64-apple-macosx/debug/MonoExpireMacSupportTests.build/StaticFileResponderTests.swift.o",
