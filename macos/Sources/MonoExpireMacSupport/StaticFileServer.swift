@@ -1,4 +1,5 @@
 import Foundation
+import Network
 
 public struct HTTPResponse: Equatable {
     public let statusCode: Int
@@ -11,6 +12,143 @@ public struct HTTPResponse: Equatable {
         self.reasonPhrase = reasonPhrase
         self.headers = headers
         self.body = body
+    }
+
+    public func serialized() -> Data {
+        var responseHeaders = headers
+        responseHeaders["Connection"] = "close"
+
+        var headerLines = "HTTP/1.1 \(statusCode) \(reasonPhrase)\r\n"
+        for key in responseHeaders.keys.sorted() {
+            headerLines += "\(key): \(responseHeaders[key] ?? "")\r\n"
+        }
+        headerLines += "\r\n"
+
+        var data = Data(headerLines.utf8)
+        data.append(body)
+        return data
+    }
+}
+
+public enum StaticFileServerError: Error, Equatable, LocalizedError {
+    case invalidPort(UInt16)
+    case listenerFailed(String)
+    case listenerCancelled
+
+    public var errorDescription: String? {
+        switch self {
+        case .invalidPort(let port):
+            return "Invalid localhost port: \(port)"
+        case .listenerFailed(let message):
+            return "Static server failed: \(message)"
+        case .listenerCancelled:
+            return "Static server was cancelled before it was ready"
+        }
+    }
+}
+
+public final class StaticFileServer {
+    private let requestedPort: UInt16
+    private let responder: StaticFileResponder
+    private let queue = DispatchQueue(label: "com.monoexpire.mac.static-server")
+    private var listener: NWListener?
+    private var activePort: UInt16?
+
+    public init(webRoot: URL, port: UInt16 = 41731) throws {
+        self.requestedPort = port
+        self.responder = StaticFileResponder(webRoot: webRoot)
+    }
+
+    public var baseURL: URL {
+        let port = activePort ?? requestedPort
+        return URL(string: "http://localhost:\(port)/")!
+    }
+
+    public func start() async throws {
+        let parameters = NWParameters.tcp
+        parameters.allowLocalEndpointReuse = true
+
+        let newListener: NWListener
+        if requestedPort == 0 {
+            newListener = try NWListener(using: parameters)
+        } else if let port = NWEndpoint.Port(rawValue: requestedPort) {
+            newListener = try NWListener(using: parameters, on: port)
+        } else {
+            throw StaticFileServerError.invalidPort(requestedPort)
+        }
+
+        listener = newListener
+        newListener.newConnectionHandler = { [weak self] connection in
+            self?.handle(connection)
+        }
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            var didResume = false
+            newListener.stateUpdateHandler = { [weak self] state in
+                guard !didResume else { return }
+
+                switch state {
+                case .ready:
+                    self?.activePort = newListener.port.map { UInt16($0.rawValue) } ?? self?.requestedPort
+                    didResume = true
+                    continuation.resume()
+                case .failed(let error):
+                    didResume = true
+                    continuation.resume(throwing: StaticFileServerError.listenerFailed(error.localizedDescription))
+                case .cancelled:
+                    didResume = true
+                    continuation.resume(throwing: StaticFileServerError.listenerCancelled)
+                default:
+                    break
+                }
+            }
+            newListener.start(queue: queue)
+        }
+    }
+
+    public func stop() {
+        listener?.cancel()
+        listener = nil
+    }
+
+    private func handle(_ connection: NWConnection) {
+        connection.start(queue: queue)
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 64 * 1024) { [weak self] data, _, _, _ in
+            let response = self?.response(for: data) ?? Self.badRequestResponse()
+            connection.send(content: response.serialized(), completion: .contentProcessed { _ in
+                connection.cancel()
+            })
+        }
+    }
+
+    private func response(for data: Data?) -> HTTPResponse {
+        guard
+            let data,
+            let requestText = String(data: data, encoding: .utf8),
+            let requestLine = requestText.components(separatedBy: "\r\n").first
+        else {
+            return Self.badRequestResponse()
+        }
+
+        let parts = requestLine.split(separator: " ", maxSplits: 2).map(String.init)
+        guard parts.count >= 2 else {
+            return Self.badRequestResponse()
+        }
+
+        return responder.response(forPath: parts[1], method: parts[0])
+    }
+
+    private static func badRequestResponse() -> HTTPResponse {
+        let body = Data("Bad Request".utf8)
+        return HTTPResponse(
+            statusCode: 400,
+            reasonPhrase: "Bad Request",
+            headers: [
+                "Content-Type": "text/plain; charset=utf-8",
+                "Content-Length": "\(body.count)"
+            ],
+            body: body
+        )
     }
 }
 
@@ -130,4 +268,3 @@ public final class StaticFileResponder {
         }
     }
 }
-
