@@ -278,166 +278,30 @@ export default function App() {
   const [pendingOtpEmail, setPendingOtpEmail] = useState('');
   const [pendingCloudSync, setPendingCloudSync] = useState(false);
 
-  // 导出到日历 (ICS格式) - 根据当前页面类型导出
+  // 导出到日历 - 根据当前页面类型导出
   const handleExportToCalendar = async () => {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        await CapacitorCalendar.requestFullCalendarAccess();
-        
-        const selectedCalendars = await CapacitorCalendar.selectCalendarsWithPrompt({
-          displayStyle: 0
-        });
-        
-        if (!selectedCalendars.result?.length) {
-          return;
-        }
-        
-        const calendarId = selectedCalendars.result[0].id;
-        let addedCount = 0;
-        let skippedCount = 0;
+    const events = buildCalendarExportEvents(pageType, { accounts, reminders, goals });
+    const typeLabel = calendarExportTypeLabel(pageType);
 
-        if (pageType === 'subscription') {
-          // 导出订阅
-          for (const account of accounts) {
-            const startDate = new Date(account.expirationDate);
-            startDate.setHours(0, 0, 0, 0);
-            const endDate = new Date(startDate);
-            endDate.setDate(endDate.getDate() + 1);
-            const title = `${account.name} 订阅到期`;
-            
-            try {
-              const existingEvents = await CapacitorCalendar.listEventsInRange({
-                from: startDate.getTime(),
-                to: endDate.getTime()
-              });
-              
-              const isDuplicate = existingEvents.result?.some(
-                (event: any) => event.title === title
-              );
-              
-              if (!isDuplicate) {
-                await CapacitorCalendar.createEvent({
-                  title: title,
-                  calendarId: calendarId,
-                  startDate: startDate.getTime(),
-                  endDate: endDate.getTime(),
-                  isAllDay: true,
-                  description: account.notes || (account.provider ? `服务商: ${account.provider}` : ''),
-                  alerts: [-(3 * 24 * 60), -(2 * 24 * 60), -(24 * 60), -60]
-                });
-                addedCount++;
-              } else {
-                skippedCount++;
-              }
-            } catch (e) {}
-          }
-        } else if (pageType === 'reminder') {
-          // 导出提醒 - 使用每个提醒设置的日历导出天数
-          for (const reminder of reminders) {
-            const times = reminder.times || ['08:00'];
-            const DAYS_TO_CREATE = reminder.calendarDays || 30;
-            
-            for (let dayOffset = 0; dayOffset < DAYS_TO_CREATE; dayOffset++) {
-              const eventDate = new Date();
-              eventDate.setDate(eventDate.getDate() + dayOffset);
-              const dayOfWeek = eventDate.getDay(); // 0=周日, 1=周一, ...
-              
-              // 根据重复规则判断是否需要创建事件
-              let shouldCreate = false;
-              if (reminder.repeatRule === 'none' && dayOffset === 0) {
-                shouldCreate = true;
-              } else if (reminder.repeatRule === 'daily') {
-                shouldCreate = true;
-              } else if (reminder.repeatRule === 'weekdays') {
-                shouldCreate = dayOfWeek >= 1 && dayOfWeek <= 5;
-              } else if (reminder.repeatRule === 'weekly' && reminder.customDays?.length) {
-                shouldCreate = reminder.customDays.includes(dayOfWeek);
-              } else if (reminder.repeatRule === 'custom' && reminder.customDays?.length) {
-                shouldCreate = reminder.customDays.includes(dayOfWeek);
-              }
-              
-              if (!shouldCreate) continue;
-              
-              for (const time of times) {
-                const [hours, minutes] = time.split(':').map(Number);
-                const startTime = new Date(eventDate);
-                startTime.setHours(hours, minutes, 0, 0);
-                const endTime = new Date(startTime);
-                endTime.setMinutes(endTime.getMinutes() + 30);
-                
-                const title = `${reminder.name}`;
-                
-                try {
-                  await CapacitorCalendar.createEvent({
-                    title: title,
-                    calendarId: calendarId,
-                    startDate: startTime.getTime(),
-                    endDate: endTime.getTime(),
-                    isAllDay: false,
-                    description: reminder.notes || '',
-                    alerts: [-5]
-                  });
-                  addedCount++;
-                } catch (e) {}
-              }
-            }
-          }
-        } else if (pageType === 'goal') {
-          // 导出目标 - 截止日期事件
-          for (const goal of goals) {
-            if (goal.isCompleted) continue; // 跳过已完成的目标
-            
-            const startDate = new Date(goal.deadline);
-            startDate.setHours(0, 0, 0, 0);
-            const endDate = new Date(startDate);
-            endDate.setDate(endDate.getDate() + 1);
-            const title = `🎯 ${goal.name} 截止`;
-            
-            try {
-              const existingEvents = await CapacitorCalendar.listEventsInRange({
-                from: startDate.getTime(),
-                to: endDate.getTime()
-              });
-              
-              const isDuplicate = existingEvents.result?.some(
-                (event: any) => event.title === title
-              );
-              
-              if (!isDuplicate) {
-                await CapacitorCalendar.createEvent({
-                  title: title,
-                  calendarId: calendarId,
-                  startDate: startDate.getTime(),
-                  endDate: endDate.getTime(),
-                  isAllDay: true,
-                  description: goal.notes || '',
-                  alerts: [-(7 * 24 * 60), -(3 * 24 * 60), -(24 * 60)]
-                });
-                addedCount++;
-              } else {
-                skippedCount++;
-              }
-            } catch (e) {}
-          }
+    try {
+      const result = window.monoExpireMacCalendar
+        ? await window.monoExpireMacCalendar.exportEvents(events)
+        : Capacitor.isNativePlatform()
+          ? await exportEventsWithCapacitorCalendar(events)
+          : null;
+
+      if (!result) {
+        if (!window.monoExpireMacCalendar && !Capacitor.isNativePlatform()) {
+          alert('日历导出仅支持 iOS/Android 设备或 MonoExpire Mac App');
         }
-        
-        await CapacitorCalendar.openCalendar({ date: Date.now() });
-        
-        const typeLabel = pageType === 'subscription' ? '订阅' : pageType === 'reminder' ? '提醒' : '目标';
-        if (skippedCount > 0) {
-          alert(`已添加 ${addedCount} 个${typeLabel}事件，跳过 ${skippedCount} 个已存在的事件`);
-        } else if (addedCount > 0) {
-          alert(`已添加 ${addedCount} 个${typeLabel}事件`);
-        } else {
-          alert(`没有${typeLabel}需要导出`);
-        }
-      } catch (e: any) {
-        if (!e.message?.includes('denied') && !e.message?.includes('cancel')) {
-          alert('添加失败: ' + (e.message || e));
-        }
+        return;
       }
-    } else {
-      alert('日历导出仅支持 iOS/Android 设备');
+
+      showCalendarExportResult(typeLabel, result.addedCount, result.skippedCount);
+    } catch (e: any) {
+      if (!e.message?.includes('denied') && !e.message?.includes('cancel')) {
+        alert('添加失败: ' + (e.message || e));
+      }
     }
   };
 
